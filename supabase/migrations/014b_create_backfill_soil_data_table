@@ -1,0 +1,59 @@
+-- ============================================================
+-- Backfill: Buat baris soil_data 'pending' untuk demoplot LAMA
+-- Jalankan SEKALI di SQL Editor Supabase setelah migration 014
+-- ============================================================
+
+DO $$
+DECLARE
+  depths      TEXT[]  := ARRAY['0-5cm', '5-15cm', '15-30cm'];
+  top_depths  INT[]   := ARRAY[0, 5, 15];
+  bot_depths  INT[]   := ARRAY[5, 15, 30];
+  rec         RECORD;
+  i           INT;
+  inserted    INT := 0;
+  skipped     INT := 0;
+BEGIN
+
+  -- Loop semua demoplot yang punya koordinat
+  FOR rec IN
+    SELECT id, user_id, latitude, longitude
+    FROM demoplot
+    WHERE latitude IS NOT NULL
+      AND longitude IS NOT NULL
+  LOOP
+
+    FOR i IN 1..array_length(depths, 1) LOOP
+      INSERT INTO soil_data (
+        user_id,
+        demoplot_id,
+        latitude,
+        longitude,
+        depth_label,
+        top_depth,
+        bottom_depth,
+        fetch_status
+      ) VALUES (
+        rec.user_id,
+        rec.id,
+        rec.latitude,
+        rec.longitude,
+        depths[i],
+        top_depths[i],
+        bot_depths[i],
+        'pending'
+      )
+      ON CONFLICT (demoplot_id, depth_label) DO NOTHING;
+
+      IF FOUND THEN
+        inserted := inserted + 1;
+      ELSE
+        skipped := skipped + 1;
+      END IF;
+    END LOOP;
+
+  END LOOP;
+
+  RAISE NOTICE 'Backfill selesai: % baris dibuat, % baris sudah ada (skip).', inserted, skipped;
+
+END;
+$$;

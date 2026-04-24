@@ -1,0 +1,285 @@
+-- ============================================================
+-- Migration 014: Soil Data from SoilGrids API
+-- Menyimpan data tanah per demoplot dari SoilGrids REST API
+-- Endpoint: https://rest.isric.org/soilgrids/v2.0/properties/query
+-- Properties: bdod, cec, clay, sand, silt, soc, nitrogen, phh2o
+-- Depths: 0-5cm, 5-15cm, 15-30cm
+-- ============================================================
+
+-- ------------------------------------------------------------
+-- 1. TABEL UTAMA: soil_data
+--    Menyimpan data tanah per demoplot per kedalaman
+-- ------------------------------------------------------------
+CREATE TABLE soil_data (
+  id              UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id         UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  demoplot_id     UUID NOT NULL REFERENCES demoplot(id) ON DELETE CASCADE,
+
+  -- Koordinat saat fetch (snapshot, bisa beda kalau demoplot dipindah)
+  latitude        DOUBLE PRECISION NOT NULL,
+  longitude       DOUBLE PRECISION NOT NULL,
+
+  -- Kedalaman lapisan tanah yang diambil dari SoilGrids
+  depth_label     TEXT NOT NULL,  -- '0-5cm' | '5-15cm' | '15-30cm'
+  top_depth       INT  NOT NULL,  -- cm, e.g. 0
+  bottom_depth    INT  NOT NULL,  -- cm, e.g. 5
+
+  -- ---- Properti Fisika Tanah ----
+  -- Bulk Density (Kerapatan Isi) → unit asli: cg/cm³ → konversi / 100 → kg/dm³
+  bdod_mean       NUMERIC(6,2),   -- kg/dm³
+  -- Tekstur: Clay (Liat) → unit asli: g/kg → konversi / 10 → %
+  clay_mean       NUMERIC(5,2),   -- %
+  -- Tekstur: Sand (Pasir) → unit asli: g/kg → konversi / 10 → %
+  sand_mean       NUMERIC(5,2),   -- %
+  -- Tekstur: Silt (Debu) → unit asli: g/kg → konversi / 10 → %
+  silt_mean       NUMERIC(5,2),   -- %
+
+  -- ---- Properti Kimia Tanah ----
+  -- pH (H2O) → unit asli: pH*10 → konversi / 10 → -
+  phh2o_mean      NUMERIC(4,2),   -- pH
+  -- Soil Organic Carbon → unit asli: dg/kg → konversi / 10 → g/kg
+  soc_mean        NUMERIC(6,2),   -- g/kg
+  -- Nitrogen Total → unit asli: cg/kg → konversi / 100 → g/kg
+  nitrogen_mean   NUMERIC(5,2),   -- g/kg
+  -- Cation Exchange Capacity → unit asli: mmol(c)/kg → konversi / 10 → cmol(c)/kg
+  cec_mean        NUMERIC(6,2),   -- cmol(c)/kg
+
+  -- ---- Metadata ----
+  fetch_status    TEXT NOT NULL DEFAULT 'pending'
+                  CHECK (fetch_status IN ('pending', 'success', 'failed')),
+  fetch_error     TEXT,           -- pesan error kalau gagal
+  fetched_at      TIMESTAMPTZ,    -- waktu berhasil fetch dari SoilGrids
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+
+  -- Satu demoplot, satu depth_label = satu baris unik
+  UNIQUE (demoplot_id, depth_label)
+);
+
+-- ------------------------------------------------------------
+-- 2. INDEX untuk performa query
+-- ------------------------------------------------------------
+CREATE INDEX idx_soil_data_demoplot_id  ON soil_data(demoplot_id);
+CREATE INDEX idx_soil_data_user_id      ON soil_data(user_id);
+CREATE INDEX idx_soil_data_fetch_status ON soil_data(fetch_status);
+
+-- ------------------------------------------------------------
+-- 3. ROW LEVEL SECURITY (RLS)
+-- ------------------------------------------------------------
+ALTER TABLE soil_data ENABLE ROW LEVEL SECURITY;
+
+-- User hanya bisa lihat data miliknya sendiri
+CREATE POLICY "Users can view own soil data"
+  ON soil_data FOR SELECT
+  USING (auth.uid() = user_id);
+
+-- User bisa insert data miliknya sendiri
+CREATE POLICY "Users can insert own soil data"
+  ON soil_data FOR INSERT
+  WITH CHECK (auth.uid() = user_id);
+
+-- User bisa update data miliknya sendiri
+CREATE POLICY "Users can update own soil data"
+  ON soil_data FOR UPDATE
+  USING (auth.uid() = user_id);
+
+-- User bisa delete data miliknya sendiri
+CREATE POLICY "Users can delete own soil data"
+  ON soil_data FOR DELETE
+  USING (auth.uid() = user_id);
+
+-- Admin bisa lihat semua data
+CREATE POLICY "Admins can view all soil data"
+  ON soil_data FOR SELECT
+  USING (
+    EXISTS (
+      SELECT 1 FROM profiles
+      WHERE profiles.id = auth.uid()
+        AND profiles.role = 'admin'
+    )
+  );
+
+-- Service role (Edge Function) bisa bypass RLS untuk upsert
+-- (service_role key sudah bypass RLS secara default di Supabase)
+
+-- ------------------------------------------------------------
+-- 4. TRIGGER: auto-update updated_at
+-- ------------------------------------------------------------
+-- Fungsi update_updated_at_column() sudah ada dari migration sebelumnya,
+-- tapi kita buat versi spesifik untuk menghindari konflik.
+
+CREATE OR REPLACE FUNCTION update_soil_data_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = now();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_soil_data_updated_at
+  BEFORE UPDATE ON soil_data
+  FOR EACH ROW
+  EXECUTE FUNCTION update_soil_data_updated_at();
+
+-- ------------------------------------------------------------
+-- 5. TRIGGER: auto-insert baris "pending" saat demoplot dibuat
+--    Ini akan memancing Edge Function untuk fetch data SoilGrids
+-- ------------------------------------------------------------
+
+CREATE OR REPLACE FUNCTION fn_init_soil_data_on_demoplot_insert()
+RETURNS TRIGGER AS $$
+DECLARE
+  depths TEXT[] := ARRAY['0-5cm', '5-15cm', '15-30cm'];
+  top_depths INT[] := ARRAY[0, 5, 15];
+  bot_depths INT[] := ARRAY[5, 15, 30];
+  i INT;
+BEGIN
+  -- Hanya buat baris kalau koordinat tersedia
+  IF NEW.latitude IS NOT NULL AND NEW.longitude IS NOT NULL THEN
+    FOR i IN 1..array_length(depths, 1) LOOP
+      INSERT INTO soil_data (
+        user_id,
+        demoplot_id,
+        latitude,
+        longitude,
+        depth_label,
+        top_depth,
+        bottom_depth,
+        fetch_status
+      ) VALUES (
+        NEW.user_id,
+        NEW.id,
+        NEW.latitude,
+        NEW.longitude,
+        depths[i],
+        top_depths[i],
+        bot_depths[i],
+        'pending'
+      )
+      ON CONFLICT (demoplot_id, depth_label) DO NOTHING;
+    END LOOP;
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE TRIGGER trg_init_soil_data_on_demoplot
+  AFTER INSERT ON demoplot
+  FOR EACH ROW
+  EXECUTE FUNCTION fn_init_soil_data_on_demoplot_insert();
+
+-- ------------------------------------------------------------
+-- 6. TRIGGER: re-init jika koordinat demoplot berubah
+--    Reset status ke 'pending' agar Edge Function re-fetch
+-- ------------------------------------------------------------
+
+CREATE OR REPLACE FUNCTION fn_reset_soil_data_on_coordinate_change()
+RETURNS TRIGGER AS $$
+DECLARE
+  depths TEXT[] := ARRAY['0-5cm', '5-15cm', '15-30cm'];
+  top_depths INT[] := ARRAY[0, 5, 15];
+  bot_depths INT[] := ARRAY[5, 15, 30];
+  i INT;
+BEGIN
+  -- Hanya proses kalau koordinat berubah
+  IF (OLD.latitude IS DISTINCT FROM NEW.latitude)
+  OR (OLD.longitude IS DISTINCT FROM NEW.longitude) THEN
+
+    IF NEW.latitude IS NOT NULL AND NEW.longitude IS NOT NULL THEN
+      FOR i IN 1..array_length(depths, 1) LOOP
+        INSERT INTO soil_data (
+          user_id,
+          demoplot_id,
+          latitude,
+          longitude,
+          depth_label,
+          top_depth,
+          bottom_depth,
+          fetch_status
+        ) VALUES (
+          NEW.user_id,
+          NEW.id,
+          NEW.latitude,
+          NEW.longitude,
+          depths[i],
+          top_depths[i],
+          bot_depths[i],
+          'pending'
+        )
+        ON CONFLICT (demoplot_id, depth_label) DO UPDATE SET
+          latitude     = EXCLUDED.latitude,
+          longitude    = EXCLUDED.longitude,
+          fetch_status = 'pending',
+          fetch_error  = NULL,
+          fetched_at   = NULL,
+          -- Reset semua nilai tanah agar tidak stale
+          bdod_mean    = NULL,
+          clay_mean    = NULL,
+          sand_mean    = NULL,
+          silt_mean    = NULL,
+          phh2o_mean   = NULL,
+          soc_mean     = NULL,
+          nitrogen_mean= NULL,
+          cec_mean     = NULL,
+          updated_at   = now();
+      END LOOP;
+    END IF;
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE TRIGGER trg_reset_soil_on_coordinate_change
+  AFTER UPDATE ON demoplot
+  FOR EACH ROW
+  EXECUTE FUNCTION fn_reset_soil_data_on_coordinate_change();
+
+-- ------------------------------------------------------------
+-- 7. VIEW AGREGAT: soil_data_summary
+--    Menampilkan rata-rata weighted per demoplot (semua kedalaman)
+--    berguna untuk tampilan dashboard ringkas
+-- ------------------------------------------------------------
+CREATE OR REPLACE VIEW soil_data_summary AS
+SELECT
+  d.id          AS demoplot_id,
+  d.nama_demoplot,
+  d.petani_id,
+  d.user_id,
+  d.latitude,
+  d.longitude,
+  -- Rata-rata sederhana 3 lapisan (bisa diganti weighted kalau perlu)
+  ROUND(AVG(s.phh2o_mean)::NUMERIC, 2)    AS ph_rata_rata,
+  ROUND(AVG(s.soc_mean)::NUMERIC, 2)      AS c_organik_rata_rata,   -- g/kg
+  ROUND(AVG(s.nitrogen_mean)::NUMERIC, 2) AS nitrogen_rata_rata,    -- g/kg
+  ROUND(AVG(s.cec_mean)::NUMERIC, 2)      AS ktk_rata_rata,         -- cmol(c)/kg
+  ROUND(AVG(s.clay_mean)::NUMERIC, 2)     AS liat_rata_rata,        -- %
+  ROUND(AVG(s.sand_mean)::NUMERIC, 2)     AS pasir_rata_rata,       -- %
+  ROUND(AVG(s.silt_mean)::NUMERIC, 2)     AS debu_rata_rata,        -- %
+  ROUND(AVG(s.bdod_mean)::NUMERIC, 2)     AS bdod_rata_rata,        -- kg/dm³
+  -- Penentuan tekstur tanah dominan dari lapisan 0-5cm
+  (SELECT
+    CASE
+      WHEN clay_mean >= 40 THEN 'Liat'
+      WHEN silt_mean >= 50 AND clay_mean < 28 THEN 'Debu'
+      WHEN sand_mean >= 70 AND clay_mean < 15 THEN 'Pasir'
+      WHEN clay_mean >= 28 AND clay_mean < 40 THEN 'Liat Berlempung'
+      WHEN sand_mean >= 45 AND clay_mean < 20 THEN 'Lempung Berpasir'
+      ELSE 'Lempung'
+    END
+   FROM soil_data s2
+   WHERE s2.demoplot_id = d.id AND s2.depth_label = '0-5cm'
+   LIMIT 1
+  ) AS tekstur_tanah,
+  -- Status fetch keseluruhan
+  CASE
+    WHEN COUNT(*) FILTER (WHERE s.fetch_status = 'failed') > 0 THEN 'failed'
+    WHEN COUNT(*) FILTER (WHERE s.fetch_status = 'pending') > 0 THEN 'pending'
+    ELSE 'success'
+  END AS status_fetch,
+  MAX(s.fetched_at) AS terakhir_fetch
+FROM demoplot d
+LEFT JOIN soil_data s ON s.demoplot_id = d.id
+GROUP BY d.id, d.nama_demoplot, d.petani_id, d.user_id, d.latitude, d.longitude;
+
+-- Grant akses view ke authenticated user (filtered by RLS via join)
+GRANT SELECT ON soil_data_summary TO authenticated;

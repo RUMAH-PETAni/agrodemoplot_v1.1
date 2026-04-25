@@ -1,7 +1,7 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { createClient } from '@supabase/supabase-js';
-import { VITE_SUPABASE_URL as supabaseUrl, VITE_SUPABASE_ANON_KEY as supabaseAnonKey } from '$env/static/private';
+import { env } from '$env/dynamic/private';
 import PDFDocument from 'pdfkit-table';
 
 export const POST: RequestHandler = async ({ request }) => {
@@ -20,6 +20,9 @@ export const POST: RequestHandler = async ({ request }) => {
     const token = authHeader?.split(' ')[1];
 
     if (!token) return json({ message: 'Unauthorized' }, { status: 401 });
+
+    const supabaseUrl = env.VITE_SUPABASE_URL || '';
+    const supabaseAnonKey = env.VITE_SUPABASE_ANON_KEY || '';
 
     const userSupabase = createClient(supabaseUrl, supabaseAnonKey, {
       global: { headers: { Authorization: `Bearer ${token}` } }

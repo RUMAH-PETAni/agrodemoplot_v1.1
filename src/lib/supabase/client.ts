@@ -1,11 +1,11 @@
 import { createClient } from '@supabase/supabase-js';
+import { env } from '$env/dynamic/public';
 
-// Use environment variables for security
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabaseUrl = env.PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = env.PUBLIC_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables');
+  console.error('CRITICAL: Missing Supabase environment variables! Check Vercel Environment Variables settings.');
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = createClient(supabaseUrl || '', supabaseAnonKey || '');

@@ -1,6 +1,7 @@
 <script lang="ts">
   import { marked } from 'marked';
-  import DOMPurify from 'isomorphic-dompurify';
+  import DOMPurify from 'dompurify';
+  import { browser } from '$app/environment';
   import { page } from '$app/stores';
   import { FileLock, Calendar, ArrowLeft } from '@lucide/svelte';
   import { fade, fly } from 'svelte/transition';
@@ -10,7 +11,7 @@
   $effect(() => {
     if ($page.data.termsContent) {
       const rawHtml = marked.parse($page.data.termsContent);
-      termsContent = DOMPurify.sanitize(rawHtml as string);
+      termsContent = browser ? DOMPurify.sanitize(rawHtml as string) : rawHtml as string;
     }
   });
 </script>

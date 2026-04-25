@@ -13,7 +13,8 @@
   import { goto } from "$app/navigation";
   import { fade, fly, scale } from "svelte/transition";
   import { marked } from "marked";
-  import DOMPurify from "isomorphic-dompurify";
+  import DOMPurify from "dompurify";
+  import { browser } from "$app/environment";
 
   // Define types for our chat messages
   export type Message = {
@@ -144,7 +145,8 @@
   }
 
   function renderMarkdown(content: string) {
-    return DOMPurify.sanitize(marked.parse(content) as string);
+    const rawHtml = marked.parse(content) as string;
+    return browser ? DOMPurify.sanitize(rawHtml) : rawHtml;
   }
 </script>
 

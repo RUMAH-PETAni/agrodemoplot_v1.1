@@ -1,48 +1,47 @@
-import { createOpenAI } from '@ai-sdk/openai';
-import { streamText } from 'ai';
+import OpenAI from 'openai';
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { env } from '$env/dynamic/private';
+
+const SYSTEM_PROMPT = `Anda adalah AI-Gronomist, seorang asisten agronomis berbasis AI yang membantu petani skala kecil dengan informasi tentang agroforestri, praktik pertanian berkelanjutan, manajemen lahan, dan teknik pertanian presisi. Berikan jawaban yang akurat, mudah dipahami, dan berbasis sains. Gunakan bahasa Indonesia yang sopan dan informatif.`;
 
 export const POST: RequestHandler = async ({ request }) => {
   try {
     const { messages } = await request.json();
 
     if (!messages || !Array.isArray(messages)) {
-      return json({ error: 'Invalid messages format' }, { status: 400 });
+      return json({ error: 'Format pesan tidak valid.' }, { status: 400 });
     }
 
     if (!env.OPENAI_API_KEY) {
-      console.error('CRITICAL: OpenAI API key is not configured in environment variables');
-      return json({ error: 'OpenAI API key is not configured' }, { status: 500 });
+      console.error('CRITICAL: OPENAI_API_KEY tidak dikonfigurasi.');
+      return json({ error: 'OpenAI API key tidak dikonfigurasi.' }, { status: 500 });
     }
 
-    // Create OpenAI instance
-    const openai = createOpenAI({
-      apiKey: env.OPENAI_API_KEY,
+    const openai = new OpenAI({ apiKey: env.OPENAI_API_KEY });
+
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [
+        { role: 'system', content: SYSTEM_PROMPT },
+        ...messages.map((msg: any) => ({
+          role: msg.role as 'user' | 'assistant',
+          content: msg.content as string,
+        })),
+      ],
     });
 
-    // Stream the response from OpenAI
-    const result = await streamText({
-      model: openai('gpt-4o-mini'),
-      system: `Anda adalah AI-Gronomist, seorang asisten agronomis berbasis AI yang membantu petani skala kecil dengan informasi tentang agroforestri, praktik pertanian berkelanjutan, manajemen lahan, dan teknik pertanian presisi. Berikan jawaban yang akurat, mudah dipahami, dan berbasis sains. Gunakan bahasa Indonesia yang sopan dan informatif.`,
-      messages: messages.map((msg: any) => ({
-        role: msg.role,
-        content: msg.content
-      })),
-    });
+    const content = completion.choices[0]?.message?.content ?? '';
 
-    // Collect the full response
-    let fullResponse = '';
-    for await (const delta of result.textStream) {
-      fullResponse += delta;
+    if (!content) {
+      console.error('OpenAI returned empty content.');
+      return json({ error: 'AI tidak menghasilkan respons. Coba lagi.' }, { status: 500 });
     }
 
-    return json({
-      content: fullResponse
-    });
+    return json({ content });
   } catch (error: any) {
-    console.error('Error in AI chat API:', error);
-    return json({ error: error.message || 'Failed to get response from AI' }, { status: 500 });
+    const message = error?.message ?? String(error);
+    console.error('Error in AI chat API:', message);
+    return json({ error: message }, { status: 500 });
   }
 };

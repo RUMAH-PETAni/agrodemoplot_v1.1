@@ -114,9 +114,17 @@
         }),
       });
 
-      if (!response.ok) throw new Error("Gagal mendapatkan respon dari AI.");
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.error || "Gagal mendapatkan respon dari AI.");
+      }
 
       const data = await response.json();
+
+      if (!data.content) {
+        throw new Error("Respon AI kosong. Coba kirim ulang pesan Anda.");
+      }
+
       const assistantMessage: Message = {
         id: `assistant-${Date.now()}`,
         content: data.content,
@@ -258,7 +266,13 @@
     {/if}
 
     {#if error}
-      <div class="hidden"></div>
+      <div
+        class="mx-4 mb-2 px-5 py-3 bg-red-500/10 border border-red-500/20 text-red-500 rounded-2xl text-[11px] font-bold flex items-center gap-2"
+        in:fly={{ y: 10 }}
+      >
+        <AlertTriangle size={14} />
+        {error}
+      </div>
     {/if}
   </div>
 

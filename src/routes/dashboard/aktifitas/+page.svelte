@@ -589,7 +589,7 @@
 
             <!-- Actions Overlay -->
             <div
-              class="absolute inset-0 bg-emerald-950/40 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2"
+              class="absolute inset-0 bg-emerald-950/40 backdrop-blur-sm lg:opacity-0 lg:group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2"
             >
               <div class="relative group/btn">
                 <button

@@ -829,7 +829,7 @@
             </div>
 
             <div
-              class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3"
+              class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm lg:opacity-0 lg:group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3"
             >
               <div class="relative group/tip">
                 <button

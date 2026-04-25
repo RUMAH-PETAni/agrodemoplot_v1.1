@@ -36,7 +36,7 @@ Sebelum menjalankan proyek ini secara lokal, pastikan Anda telah memiliki:
 ## 🚀 Panduan Instalasi
 
 1. **Buka direktori proyek:**
-   Pastikan Anda berada di direktori proyek `agrodemoplot_v1.1`.
+   Pastikan Anda berada di direktori proyek `svelte`.
 
 2. **Instal seluruh dependensi:**
    ```bash

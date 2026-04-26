@@ -25,6 +25,7 @@
   import { getMonitoringPenanaman } from "$lib/services/penanaman";
   import { getMonitoringHPG } from "$lib/services/hpg";
   import { getLogAktifitas } from "$lib/services/aktifitas";
+  import { getProduktivitas } from "$lib/services/produktivitas";
 
   import menu1Img from "$lib/assets/images/petani.jpg";
   import menu2Img from "$lib/assets/images/polygon.jpg";
@@ -43,6 +44,7 @@
   let totalTanaman = $state(0);
   let totalHpg = $state(0);
   let totalAktifitas = $state(0);
+  let totalProduktivitas = $state(0);
   let lastSync = $state(new Date());
 
   async function loadSummaryData() {
@@ -54,6 +56,7 @@
         getMonitoringPenanaman(),
         getMonitoringHPG(),
         getLogAktifitas(),
+        getProduktivitas(),
       ]);
       totalPetani = petani.length;
       totalLahan = demoplots.length;
@@ -64,6 +67,7 @@
 
       totalHpg = hpg.length;
       totalAktifitas = logs.length;
+      totalProduktivitas = productivity?.length || 0;
 
       lastSync = new Date();
     } catch (err) {
@@ -221,7 +225,7 @@
             <p
               class="text-[9px] font-black text-emerald-200/40 uppercase tracking-[0.2em] mb-1"
             >
-              Total Petani
+              Petani
             </p>
             {#if statsLoading}
               <div class="h-8 bg-white/10 animate-pulse rounded-lg w-12"></div>
@@ -250,28 +254,7 @@
               <p class="text-2xl font-black">{totalLahan}</p>
             {/if}
           </div>
-          <!-- Stat 3: Aktifitas -->
-          <div
-            class="group relative p-6 bg-white/10 border border-white/10 rounded-[2.5rem] hover:bg-white/20 hover:-translate-y-1 hover:shadow-2xl hover:border-white/20 transition-all duration-300 overflow-hidden active:scale-95"
-          >
-            <div
-              class="absolute -right-4 -bottom-4 text-purple-400/20 group-hover:text-purple-400/30 transition-colors"
-            >
-              <ClipboardClock size={100} strokeWidth={1} />
-            </div>
-            <p
-              class="text-[9px] font-black text-emerald-200/40 uppercase tracking-[0.2em] mb-1"
-            >
-              Aktivitas
-            </p>
-            {#if statsLoading}
-              <div class="h-8 bg-white/10 animate-pulse rounded-lg w-12"></div>
-            {:else}
-              <p class="text-2xl font-black">{totalAktifitas}</p>
-            {/if}
-          </div>
-
-          <!-- Stat 4: Tanaman -->
+          <!-- Stat 3: Tanaman -->
           <div
             class="group relative p-6 bg-white/10 border border-white/10 rounded-[2.5rem] hover:bg-white/20 hover:-translate-y-1 hover:shadow-2xl hover:border-white/20 transition-all duration-300 overflow-hidden active:scale-95"
           >
@@ -292,8 +275,8 @@
             {/if}
           </div>
 
-          <!-- Stat 5: HPG -->
-          <div
+          <!-- Stat 4: HPG -->
+           <div
             class="group relative p-6 bg-white/10 border border-white/10 rounded-[2.5rem] hover:bg-white/20 hover:-translate-y-1 hover:shadow-2xl hover:border-white/20 transition-all duration-300 overflow-hidden active:scale-95"
           >
             <div
@@ -310,6 +293,50 @@
               <div class="h-8 bg-white/10 animate-pulse rounded-lg w-12"></div>
             {:else}
               <p class="text-2xl font-black">{totalHpg}</p>
+            {/if}
+          </div>
+          
+
+          <!-- Stat 5: Aktivitas -->
+           <div
+            class="group relative p-6 bg-white/10 border border-white/10 rounded-[2.5rem] hover:bg-white/20 hover:-translate-y-1 hover:shadow-2xl hover:border-white/20 transition-all duration-300 overflow-hidden active:scale-95"
+          >
+            <div
+              class="absolute -right-4 -bottom-4 text-purple-400/20 group-hover:text-purple-400/30 transition-colors"
+            >
+              <ClipboardClock size={100} strokeWidth={1} />
+            </div>
+            <p
+              class="text-[9px] font-black text-emerald-200/40 uppercase tracking-[0.2em] mb-1"
+            >
+              Aktivitas
+            </p>
+            {#if statsLoading}
+              <div class="h-8 bg-white/10 animate-pulse rounded-lg w-12"></div>
+            {:else}
+              <p class="text-2xl font-black">{totalAktifitas}</p>
+            {/if}
+          </div>
+          
+
+          <!-- Stat 6: Produktivitas -->
+          <div
+            class="group relative p-6 bg-white/10 border border-white/10 rounded-[2.5rem] hover:bg-white/20 hover:-translate-y-1 hover:shadow-2xl hover:border-white/20 transition-all duration-300 overflow-hidden active:scale-95"
+          >
+            <div
+              class="absolute -right-4 -bottom-4 text-blue-400/20 group-hover:text-blue-400/30 transition-colors"
+            >
+              <BarChart3 size={100} strokeWidth={1} />
+            </div>
+            <p
+              class="text-[9px] font-black text-emerald-200/40 uppercase tracking-[0.2em] mb-1"
+            >
+              Catatan Prod.
+            </p>
+            {#if statsLoading}
+              <div class="h-8 bg-white/10 animate-pulse rounded-lg w-12"></div>
+            {:else}
+              <p class="text-2xl font-black">{totalProduktivitas}</p>
             {/if}
           </div>
         </div>

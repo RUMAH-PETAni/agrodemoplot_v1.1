@@ -301,6 +301,7 @@
   let formCatatan = $state("");
   let formPolygon = $state<any>(null);
   let polygonFileName = $state("");
+  let polygonInput = $state<HTMLInputElement>();
 
   // Form Fields (Karakteristik Lahan)
   let formKelerengan = $state("");
@@ -1206,15 +1207,12 @@
       onclick={(e) => e.stopPropagation()}
     >
       <div
-        class="p-8 border-b border-border flex items-center justify-between bg-muted/30"
+        class="p-8 h-20 border-b border-border flex items-center justify-between bg-muted/30"
       >
         <div>
           <h2 class="text-2xl font-black uppercase tracking-tight">
-            {isEditing ? "Perbarui Lahan" : "Tambah Lahan"}
+            {isEditing ? "Perbarui Data" : "Tambah Lahan"}
           </h2>
-          <p class="text-xs text-muted-foreground font-medium mt-1">
-            Konfigurasi perimeter spasial dan metadata demoplot.
-          </p>
         </div>
         <button
           onclick={() => (showFormDrawer = false)}
@@ -1240,7 +1238,7 @@
               <input
                 type="text"
                 bind:value={formNamaDemoplot}
-                placeholder="Contoh: Plot Gayo 01"
+                placeholder="Contoh: Demoplot 01"
                 class="w-full bg-muted/50 border-2 border-transparent focus:border-emerald-500/50 rounded-2xl px-4 py-3 text-sm font-bold outline-none"
               />
             </div>
@@ -1360,37 +1358,70 @@
                 class="w-full bg-muted/50 border-2 border-transparent focus:border-emerald-500/50 rounded-xl p-3 text-xs font-bold outline-none"
               />
             </div>
-            <div class="space-y-2 col-span-2 md:col-span-4">
+            <div class="space-y-4 col-span-2 md:col-span-4">
               <label
-                class="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1"
-                >Upload Polygon Spasial (.json, .geojson)</label
+                class="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1"
+                >Polygon Spasial (.json, .geojson)</label
               >
-              <div class="relative group">
-                <input
-                  type="file"
-                  accept=".json,.geojson"
-                  onchange={handlePolygonUpload}
-                  class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                />
-                <div
-                  class="w-full bg-muted/50 border-2 border-dashed border-border group-hover:border-emerald-500/50 rounded-xl p-6 transition-all flex flex-col items-center justify-center gap-2"
-                >
+              <div
+                class="relative group h-64 bg-muted/30 rounded-[2.5rem] border-2 border-dashed border-border flex items-center justify-center overflow-hidden transition-all hover:border-emerald-500/50"
+              >
+                {#if polygonFileName}
+                  <div class="flex flex-col items-center gap-4 text-center p-8">
+                    <div class="w-20 h-20 bg-emerald-500/10 text-emerald-600 rounded-3xl flex items-center justify-center shadow-xl shadow-emerald-500/5 border border-emerald-500/20">
+                      <Layers size={40} />
+                    </div>
+                    <div>
+                      <p class="text-sm font-black text-foreground max-w-xs truncate px-4">
+                        {polygonFileName}
+                      </p>
+                      <p class="text-[10px] font-bold text-emerald-600 uppercase tracking-widest mt-1">
+                        File Spasial Terpasang
+                      </p>
+                    </div>
+                  </div>
+                  
                   <div
-                    class="p-3 bg-white rounded-xl shadow-sm text-emerald-600 group-hover:scale-110 transition-transform"
+                    class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3"
                   >
-                    <Layers size={20} />
+                    <button
+                      type="button"
+                      onclick={() => polygonInput?.click()}
+                      class="p-4 bg-white rounded-2xl text-emerald-600 hover:scale-110 transition-transform"
+                      title="Ganti File"
+                    ><RefreshCw size={24} /></button>
+                    <button
+                      type="button"
+                      onclick={() => { 
+                        formPolygon = null; 
+                        polygonFileName = ""; 
+                      }}
+                      class="p-4 bg-red-500 rounded-2xl text-white hover:scale-110 transition-transform"
+                      title="Hapus"
+                    ><Trash2 size={24} /></button>
                   </div>
-                  <div class="text-center">
-                    <p class="text-xs font-bold text-slate-700">
-                      {polygonFileName ||
-                        "Klik atau seret file GeoJSON di sini"}
-                    </p>
-                    <p class="text-[9px] font-medium text-slate-400 mt-1">
-                      Format yang didukung: Standard GeoJSON (.json, .geojson)
-                    </p>
+                {:else}
+                  <div
+                    class="flex flex-col items-center gap-3 text-muted-foreground/40 group-hover:text-emerald-500/50"
+                  >
+                    <Layers size={48} />
+                    <button
+                      type="button"
+                      onclick={() => polygonInput?.click()}
+                      class="text-[10px] font-black uppercase tracking-widest border border-current px-4 py-2 rounded-xl"
+                    >Upload GeoJSON</button>
+                    <p class="text-[9px] font-medium opacity-60">Format: .json, .geojson</p>
                   </div>
-                </div>
+                {/if}
               </div>
+
+              <input
+                type="file"
+                bind:this={polygonInput}
+                accept=".json,.geojson"
+                onchange={handlePolygonUpload}
+                class="hidden"
+              />
             </div>
           </div>
         </div>
@@ -1425,7 +1456,7 @@
               <input
                 type="text"
                 bind:value={formTanamanUtama}
-                placeholder="Arabika Gayo..."
+                placeholder="Contoh: Kopi Robusta..."
                 class="w-full bg-muted/50 border-2 border-transparent focus:border-emerald-500/50 rounded-2xl px-4 py-3 text-sm font-bold outline-none"
               />
             </div>
@@ -1449,7 +1480,7 @@
               <input
                 type="text"
                 bind:value={formPohonPenaung}
-                placeholder="Lamtoro..."
+                placeholder="Contoh: Alpukat..."
                 class="w-full bg-muted/50 border-2 border-transparent focus:border-emerald-500/50 rounded-2xl px-4 py-3 text-sm font-bold outline-none"
               />
             </div>
@@ -1473,7 +1504,7 @@
               <input
                 type="text"
                 bind:value={formJenisTanamanLainnya}
-                placeholder="Cabai, Jahe..."
+                placeholder="Contoh: Pisang..."
                 class="w-full bg-muted/50 border-2 border-transparent focus:border-emerald-500/50 rounded-2xl px-4 py-3 text-sm font-bold outline-none"
               />
             </div>
@@ -1625,7 +1656,7 @@
       </div>
 
       <div
-        class="p-8 border-t border-border bg-muted/30 flex justify-end gap-3"
+        class="p-8 h-20 border-t border-border bg-muted/30 flex items-center justify-end gap-3"
       >
         <button
           onclick={() => (showFormDrawer = false)}
@@ -1635,7 +1666,7 @@
         <button
           onclick={handleSubmit}
           class="px-8 py-4 bg-emerald-600 text-white rounded-xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-emerald-500/20 active:scale-95"
-          >Simpan Plot</button
+          >Simpan Data</button
         >
       </div>
     </div>
@@ -1729,15 +1760,12 @@
       onclick={(e) => e.stopPropagation()}
     >
       <div
-        class="p-8 border-b border-border flex items-center justify-between bg-muted/30"
+        class="p-8 h-20 border-b border-border flex items-center justify-between bg-muted/30"
       >
         <div>
           <h2 class="text-2xl font-black uppercase tracking-tight">
             Detail Demoplot
           </h2>
-          <p class="text-xs text-muted-foreground font-medium mt-1">
-            Metadata agronomi dan profil tanah.
-          </p>
         </div>
         <button
           onclick={() => (showDetailDrawer = false)}
@@ -2113,20 +2141,6 @@
             </div>
           {/if}
         </div>
-      </div>
-
-      <div class="p-8 border-t border-border bg-muted/10 flex gap-3">
-        <button
-          onclick={() => openEditForm(selectedDemoplot!)}
-          class="flex-1 h-12 bg-white border border-border hover:border-emerald-500 text-slate-800 hover:text-emerald-600 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all"
-        >
-          Edit Data
-        </button>
-        <button
-          onclick={() => (showDetailDrawer = false)}
-          class="flex-1 h-12 bg-slate-900 text-white rounded-xl font-black text-[10px] uppercase tracking-widest"
-          >Tutup Detail</button
-        >
       </div>
     </div>
   </div>

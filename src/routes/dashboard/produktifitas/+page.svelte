@@ -675,45 +675,45 @@
 
 <!-- Form Drawer -->
 {#if showFormDrawer}
-  <div class="fixed inset-0 z-[1000] flex justify-end">
+  <div
+    class="fixed inset-0 bg-black/20 backdrop-blur-sm z-[2000] flex justify-end"
+    transition:fade
+    onclick={() => (showFormDrawer = false)}
+  >
     <div
-      class="absolute inset-0 bg-slate-950/40 backdrop-blur-sm"
-      onclick={() => (showFormDrawer = false)}
-      transition:fade
-    ></div>
-    <div
-      class="relative w-full max-w-xl bg-background shadow-2xl h-full flex flex-col"
-      transition:fly={{ x: 100, duration: 400, easing: backOut }}
+      class="h-full w-full max-w-2xl bg-card border-l border-border shadow-2xl overflow-hidden flex flex-col"
+      in:fly={{ x: 600, duration: 500, easing: backOut }}
+      out:fly={{ x: 600, duration: 400 }}
+      onclick={(e) => e.stopPropagation()}
     >
-      <div class="p-6 border-b border-border flex items-center justify-between">
+      <!-- Drawer Header -->
+      <div
+        class="p-8 h-20 border-b border-border flex items-center justify-between bg-muted/30"
+      >
         <div>
-          <h2 class="text-2xl font-black tracking-tight">
-            {isEditing ? "Edit Catatan" : "Tambah Catatan"}
+          <h2 class="text-2xl font-black uppercase tracking-tight">
+            {isEditing ? "Perbarui Data" : "Tambah Catatan"}
           </h2>
-          <p
-            class="text-xs text-muted-foreground font-bold uppercase tracking-widest"
-          >
-            Produktivitas Kebun
-          </p>
         </div>
         <button
           onclick={() => (showFormDrawer = false)}
-          class="p-2 hover:bg-muted rounded-xl"
+          class="p-3 bg-white border border-border rounded-2xl hover:bg-red-50 hover:text-red-500 transition-all"
+          ><X size={24} /></button
         >
-          <X size={24} />
-        </button>
       </div>
 
-      <div class="flex-1 overflow-y-auto p-8 space-y-8">
-        <div class="grid grid-cols-2 gap-6">
+      <!-- Drawer Content -->
+      <div class="overflow-y-auto grow p-8 space-y-8 custom-scrollbar">
+        <!-- Main Info -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div class="space-y-2">
             <label
-              class="text-[10px] font-black uppercase tracking-widest text-muted-foreground"
+              class="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1"
               >Plot Kebun</label
             >
             <select
               bind:value={formDemoplotId}
-              class="w-full bg-muted/50 border-transparent rounded-2xl px-4 py-3 text-sm font-medium focus:ring-4 focus:ring-emerald-500/10 transition-all"
+              class="w-full bg-muted/30 border-border rounded-xl p-4 text-sm font-bold focus:ring-2 ring-emerald-500/20"
             >
               <option value="">Pilih Plot</option>
               {#each demoplots as dp}
@@ -723,12 +723,12 @@
           </div>
           <div class="space-y-2">
             <label
-              class="text-[10px] font-black uppercase tracking-widest text-muted-foreground"
+              class="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1"
               >Kategori</label
             >
             <select
               bind:value={formKategori}
-              class="w-full bg-muted/50 border-transparent rounded-2xl px-4 py-3 text-sm font-medium focus:ring-4 focus:ring-emerald-500/10 transition-all"
+              class="w-full bg-muted/30 border-border rounded-xl p-4 text-sm font-bold focus:ring-2 ring-emerald-500/20"
             >
               <option value="">Pilih Kategori</option>
               <option value="input">Input Pertanian</option>
@@ -740,182 +740,197 @@
 
         <div class="space-y-2">
           <label
-            class="text-[10px] font-black uppercase tracking-widest text-muted-foreground"
-            >Tanggal</label
+            class="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1"
+            >Tanggal Pencatatan</label
           >
           <input
             type="date"
             bind:value={formTanggal}
-            class="w-full bg-muted/50 border-transparent rounded-2xl px-4 py-3 text-sm font-medium focus:ring-4 focus:ring-emerald-500/10 transition-all"
+            class="w-full bg-muted/30 border-border rounded-xl p-4 text-sm font-bold focus:ring-2 ring-emerald-500/20"
           />
         </div>
 
-        {#if formKategori === "input"}
-          <div class="space-y-6" in:fade>
-            <div class="space-y-2">
-              <label
-                class="text-[10px] font-black uppercase tracking-widest text-muted-foreground"
-                >Jenis Input</label
-              >
-              <input
-                type="text"
-                bind:value={formJenisInput}
-                placeholder="Misal: Urea, NPK, Roundup..."
-                class="w-full bg-muted/50 border-transparent rounded-2xl px-4 py-3 text-sm font-medium"
-              />
-            </div>
-            <div class="grid grid-cols-2 gap-6">
+        <div class="pt-6 border-t border-border/50">
+          {#if formKategori === "input"}
+            <div class="space-y-6" in:fade>
               <div class="space-y-2">
                 <label
-                  class="text-[10px] font-black uppercase tracking-widest text-muted-foreground"
-                  >Jumlah</label
-                >
-                <input
-                  type="number"
-                  bind:value={formJumlahPakai}
-                  class="w-full bg-muted/50 border-transparent rounded-2xl px-4 py-3 text-sm font-medium"
-                />
-              </div>
-              <div class="space-y-2">
-                <label
-                  class="text-[10px] font-black uppercase tracking-widest text-muted-foreground"
-                  >Satuan</label
+                  class="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1"
+                  >Jenis Input</label
                 >
                 <input
                   type="text"
-                  bind:value={formSatuan}
-                  placeholder="Kg/L/Karung"
-                  class="w-full bg-muted/50 border-transparent rounded-2xl px-4 py-3 text-sm font-medium"
+                  bind:value={formJenisInput}
+                  placeholder="Misal: Urea, NPK, Roundup..."
+                  class="w-full bg-muted/30 border-border rounded-xl p-4 text-sm font-bold focus:ring-2 ring-emerald-500/20"
                 />
               </div>
-            </div>
-            <div class="space-y-2">
-              <label
-                class="text-[10px] font-black uppercase tracking-widest text-muted-foreground"
-                >Biaya Total (Rp)</label
-              >
-              <input
-                type="number"
-                bind:value={formBiayaTotal}
-                class="w-full bg-muted/50 border-transparent rounded-2xl px-4 py-3 text-sm font-medium"
-              />
-            </div>
-          </div>
-        {:else if formKategori === "tenaga kerja"}
-          <div class="space-y-6" in:fade>
-            <div class="space-y-2">
-              <label
-                class="text-[10px] font-black uppercase tracking-widest text-muted-foreground"
-                >Jenis Pekerjaan</label
-              >
-              <input
-                type="text"
-                bind:value={formJenisPekerjaan}
-                placeholder="Misal: Penyiangan, Pemupukan..."
-                class="w-full bg-muted/50 border-transparent rounded-2xl px-4 py-3 text-sm font-medium"
-              />
-            </div>
-            <div class="grid grid-cols-2 gap-6">
+              <div class="grid grid-cols-2 gap-6">
+                <div class="space-y-2">
+                  <label
+                    class="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1"
+                    >Jumlah</label
+                  >
+                  <input
+                    type="number"
+                    bind:value={formJumlahPakai}
+                    class="w-full bg-muted/30 border-border rounded-xl p-4 text-sm font-bold focus:ring-2 ring-emerald-500/20"
+                  />
+                </div>
+                <div class="space-y-2">
+                  <label
+                    class="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1"
+                    >Satuan</label
+                  >
+                  <input
+                    type="text"
+                    bind:value={formSatuan}
+                    placeholder="Kg/L/Karung"
+                    class="w-full bg-muted/30 border-border rounded-xl p-4 text-sm font-bold focus:ring-2 ring-emerald-500/20"
+                  />
+                </div>
+              </div>
               <div class="space-y-2">
                 <label
-                  class="text-[10px] font-black uppercase tracking-widest text-muted-foreground"
-                  >Lama Kerja (Jam)</label
+                  class="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1"
+                  >Biaya Total (Rp)</label
                 >
                 <input
                   type="number"
-                  bind:value={formJamKerja}
-                  class="w-full bg-muted/50 border-transparent rounded-2xl px-4 py-3 text-sm font-medium"
-                />
-              </div>
-              <div class="space-y-2">
-                <label
-                  class="text-[10px] font-black uppercase tracking-widest text-muted-foreground"
-                  >Upah Total (Rp)</label
-                >
-                <input
-                  type="number"
-                  bind:value={formBiayaTK}
-                  class="w-full bg-muted/50 border-transparent rounded-2xl px-4 py-3 text-sm font-medium"
+                  bind:value={formBiayaTotal}
+                  placeholder="0"
+                  class="w-full bg-muted/30 border-border rounded-xl p-4 text-sm font-bold focus:ring-2 ring-emerald-500/20"
                 />
               </div>
             </div>
-          </div>
-        {:else if formKategori === "hasil panen"}
-          <div class="space-y-6" in:fade>
-            <div class="grid grid-cols-2 gap-6">
+          {:else if formKategori === "tenaga kerja"}
+            <div class="space-y-6" in:fade>
               <div class="space-y-2">
                 <label
-                  class="text-[10px] font-black uppercase tracking-widest text-muted-foreground"
-                  >Kategori Tanaman</label
-                >
-                <select
-                  bind:value={formKategoriTanaman}
-                  class="w-full bg-muted/50 border-transparent rounded-2xl px-4 py-3 text-sm font-medium"
-                >
-                  <option value="tanaman utama">Utama</option>
-                  <option value="pohon penaung">Penaung</option>
-                  <option value="tanaman lainnya">Lainnya</option>
-                </select>
-              </div>
-              <div class="space-y-2">
-                <label
-                  class="text-[10px] font-black uppercase tracking-widest text-muted-foreground"
-                  >Nama Komoditas</label
+                  class="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1"
+                  >Jenis Pekerjaan</label
                 >
                 <input
                   type="text"
-                  bind:value={formNamaJenis}
-                  placeholder="Misal: Kopi Arabika"
-                  class="w-full bg-muted/50 border-transparent rounded-2xl px-4 py-3 text-sm font-medium"
+                  bind:value={formJenisPekerjaan}
+                  placeholder="Misal: Penyiangan, Pemupukan..."
+                  class="w-full bg-muted/30 border-border rounded-xl p-4 text-sm font-bold focus:ring-2 ring-emerald-500/20"
                 />
               </div>
+              <div class="grid grid-cols-2 gap-6">
+                <div class="space-y-2">
+                  <label
+                    class="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1"
+                    >Lama Kerja (Jam)</label
+                  >
+                  <input
+                    type="number"
+                    bind:value={formJamKerja}
+                    placeholder="0"
+                    class="w-full bg-muted/30 border-border rounded-xl p-4 text-sm font-bold focus:ring-2 ring-emerald-500/20"
+                  />
+                </div>
+                <div class="space-y-2">
+                  <label
+                    class="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1"
+                    >Upah Total (Rp)</label
+                  >
+                  <input
+                    type="number"
+                    bind:value={formBiayaTK}
+                    placeholder="0"
+                    class="w-full bg-muted/30 border-border rounded-xl p-4 text-sm font-bold focus:ring-2 ring-emerald-500/20"
+                  />
+                </div>
+              </div>
             </div>
-            <div class="grid grid-cols-2 gap-6">
+          {:else if formKategori === "hasil panen"}
+            <div class="space-y-6" in:fade>
+              <div class="grid grid-cols-2 gap-6">
+                <div class="space-y-2">
+                  <label
+                    class="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1"
+                    >Kategori Tanaman</label
+                  >
+                  <select
+                    bind:value={formKategoriTanaman}
+                    class="w-full bg-muted/30 border-border rounded-xl p-4 text-sm font-bold focus:ring-2 ring-emerald-500/20"
+                  >
+                    <option value="tanaman utama">Utama</option>
+                    <option value="pohon penaung">Penaung</option>
+                    <option value="tanaman lainnya">Lainnya</option>
+                  </select>
+                </div>
+                <div class="space-y-2">
+                  <label
+                    class="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1"
+                    >Nama Komoditas</label
+                  >
+                  <input
+                    type="text"
+                    bind:value={formNamaJenis}
+                    placeholder="Misal: Kopi Arabika"
+                    class="w-full bg-muted/30 border-border rounded-xl p-4 text-sm font-bold focus:ring-2 ring-emerald-500/20"
+                  />
+                </div>
+              </div>
+              <div class="grid grid-cols-2 gap-6">
+                <div class="space-y-2">
+                  <label
+                    class="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1"
+                    >Berat Basah (Kg)</label
+                  >
+                  <input
+                    type="number"
+                    bind:value={formBeratBasah}
+                    placeholder="0"
+                    class="w-full bg-muted/30 border-border rounded-xl p-4 text-sm font-bold focus:ring-2 ring-emerald-500/20"
+                  />
+                </div>
+                <div class="space-y-2">
+                  <label
+                    class="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1"
+                    >Putaran Panen</label
+                  >
+                  <input
+                    type="number"
+                    bind:value={formPutaranPanen}
+                    placeholder="1"
+                    class="w-full bg-muted/30 border-border rounded-xl p-4 text-sm font-bold focus:ring-2 ring-emerald-500/20"
+                  />
+                </div>
+              </div>
               <div class="space-y-2">
                 <label
-                  class="text-[10px] font-black uppercase tracking-widest text-muted-foreground"
-                  >Berat Basah (Kg)</label
+                  class="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1"
+                  >Catatan Kualitas</label
                 >
-                <input
-                  type="number"
-                  bind:value={formBeratBasah}
-                  class="w-full bg-muted/50 border-transparent rounded-2xl px-4 py-3 text-sm font-medium"
-                />
-              </div>
-              <div class="space-y-2">
-                <label
-                  class="text-[10px] font-black uppercase tracking-widest text-muted-foreground"
-                  >Putaran Panen</label
-                >
-                <input
-                  type="number"
-                  bind:value={formPutaranPanen}
-                  class="w-full bg-muted/50 border-transparent rounded-2xl px-4 py-3 text-sm font-medium"
-                />
+                <textarea
+                  bind:value={formCatatanKualitas}
+                  placeholder="Misal: Grade A, Petik Merah..."
+                  class="w-full bg-muted/30 border-border rounded-xl p-4 text-sm font-medium h-32 resize-none focus:ring-2 ring-emerald-500/20"
+                ></textarea>
               </div>
             </div>
-            <div class="space-y-2">
-              <label
-                class="text-[10px] font-black uppercase tracking-widest text-muted-foreground"
-                >Catatan Kualitas</label
-              >
-              <textarea
-                bind:value={formCatatanKualitas}
-                placeholder="Misal: Grade A, Petik Merah..."
-                class="w-full bg-muted/50 border-transparent rounded-2xl px-4 py-3 text-sm font-medium h-24 resize-none"
-              ></textarea>
-            </div>
-          </div>
-        {/if}
+          {/if}
+        </div>
       </div>
 
-      <div class="p-6 border-t border-border bg-muted/20">
+      <!-- Drawer Footer -->
+      <div
+        class="p-8 h-20 bg-muted/30 border-t border-border flex items-center justify-end gap-3"
+      >
+        <button
+          onclick={() => (showFormDrawer = false)}
+          class="px-8 py-4 bg-white border border-border font-black uppercase tracking-widest text-[10px] rounded-2xl hover:bg-muted transition-all"
+          >Batal</button
+        >
         <button
           onclick={handleSubmit}
           disabled={loading}
-          class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black uppercase tracking-[0.2em] py-4 rounded-2xl transition-all shadow-lg shadow-emerald-600/20 active:scale-95 disabled:opacity-50"
+          class="px-8 py-4 bg-emerald-600 text-white font-black uppercase tracking-widest text-[10px] rounded-2xl hover:bg-emerald-700 transition-all shadow-xl shadow-emerald-600/20 disabled:opacity-50"
         >
-          {loading ? "Menyimpan..." : "Simpan Catatan"}
+          {loading ? "Menyimpan..." : "Simpan Data"}
         </button>
       </div>
     </div>

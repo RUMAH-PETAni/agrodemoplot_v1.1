@@ -110,11 +110,11 @@
     },
     {
       name: "Monitoring Tanaman",
-      desc: "Monitoring tinggi dan diameter batang tanaman.",
+      desc: "Monitoring tinggi dan kondisi tanaman.",
       icon: Sprout,
       color: "from-amber-500 to-orange-600",
     },
-     {
+    {
       name: "Monitoring HPG",
       desc: "Riwayat temuan hama dan tindakan pengendalian.",
       icon: ShieldAlert,
@@ -126,7 +126,7 @@
       icon: Clock,
       color: "from-purple-500 to-indigo-600",
     },
-     {
+    {
       name: "Analisis Profitabilitas",
       desc: "Perbandingan biaya input vs hasil panen.",
       icon: TrendingUp,
@@ -183,7 +183,8 @@
       success = "Laporan berhasil dibuat!";
     } catch (err: any) {
       console.error("Generation failed:", err);
-      error = "Gagal generate laporan: " + (err.message || "Silakan coba lagi.");
+      error =
+        "Gagal generate laporan: " + (err.message || "Silakan coba lagi.");
     } finally {
       generating = false;
     }
@@ -340,11 +341,6 @@
           Pilih jenis laporan yang ingin Anda buat secara otomatis.
         </p>
       </div>
-      <button
-        class="text-xs font-black uppercase tracking-widest text-emerald-600 hover:text-emerald-700 flex items-center gap-2"
-      >
-        Lihat Semua <ChevronRight size={14} />
-      </button>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -387,7 +383,7 @@
           </div>
 
           <!-- Bottom Right Button -->
-          <div class="relative z-10 flex justify-end mt-4">
+          <div class="relative z-10 flex justify-start mt-4">
             <div
               class="inline-flex px-4 py-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-[10px] font-black text-emerald-600 uppercase tracking-widest transition-all group-hover:bg-emerald-500 group-hover:text-white group-hover:shadow-lg group-hover:shadow-emerald-500/20"
             >

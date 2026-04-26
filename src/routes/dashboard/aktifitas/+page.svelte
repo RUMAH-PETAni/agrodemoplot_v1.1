@@ -487,7 +487,7 @@
       class="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-black uppercase tracking-widest text-[10px] p-4 md:py-4 md:px-8 rounded-2xl transition-all shadow-lg shadow-emerald-600/20 active:scale-95 whitespace-nowrap"
     >
       <Plus size={18} />
-      <span class="hidden md:inline">Tambah Log</span>
+      <span class="hidden md:inline">Tambah Aktivitas</span>
     </button>
   </div>
 
@@ -774,19 +774,16 @@
     >
       <!-- Drawer Header -->
       <div
-        class="p-8 border-b border-border flex items-center justify-between bg-muted/30"
+        class="p-8 h-20 border-b border-border flex items-center justify-between bg-muted/30"
       >
         <div>
           <h2 class="text-2xl font-black uppercase tracking-tight">
-            {isEditing ? "Perbarui Log" : "Catat Aktivitas"}
+            {isEditing ? "Perbarui Data" : "Tambah Aktivitas"}
           </h2>
-          <p class="text-xs text-muted-foreground font-medium mt-1">
-            Lengkapi detail pengerjaan lahan di bawah ini.
-          </p>
         </div>
         <button
           onclick={() => (showFormDrawer = false)}
-          class="p-3 hover:bg-red-50 hover:text-red-500 rounded-2xl transition-all"
+          class="p-3 bg-white border border-border rounded-2xl hover:bg-red-50 hover:text-red-500 transition-all"
           ><X size={24} /></button
         >
       </div>
@@ -887,7 +884,7 @@
         <div class="space-y-4 pt-6 border-t border-border/50">
           <label
             class="text-[10px] font-black uppercase tracking-widest text-muted-foreground"
-            >Foto Dokumentasi</label
+            >Dokumentasi</label
           >
           <div
             class="relative group h-64 bg-muted/30 rounded-[2.5rem] border-2 border-dashed border-border flex items-center justify-center overflow-hidden transition-all hover:border-emerald-500/50"
@@ -941,7 +938,7 @@
 
       <!-- Drawer Footer -->
       <div
-        class="p-8 bg-muted/30 border-t border-border flex justify-end gap-3"
+        class="p-8 h-20 bg-muted/30 border-t border-border flex items-center justify-end gap-3"
       >
         <button
           onclick={() => (showFormDrawer = false)}
@@ -951,7 +948,7 @@
         <button
           onclick={handleSubmit}
           class="px-8 py-4 bg-emerald-600 text-white font-black uppercase tracking-widest text-[10px] rounded-2xl hover:bg-emerald-700 transition-all shadow-xl shadow-emerald-600/20"
-          >Simpan Log</button
+          >Simpan Data</button
         >
       </div>
 
@@ -981,30 +978,19 @@
     >
       <!-- Header -->
       <div
-        class="p-8 border-b border-border flex items-center justify-between bg-emerald-900 text-white relative overflow-hidden"
+        class="p-8 h-20 border-b border-border flex items-center justify-between bg-muted/30"
       >
-        <div class="absolute inset-0 opacity-10">
-          <div
-            class="absolute -top-1/2 -left-1/4 w-full h-[200%] bg-white blur-[100px] rounded-full"
-          ></div>
-        </div>
-        <div class="relative z-10">
-          <div
-            class="inline-flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur-md rounded-full border border-white/20 text-[9px] font-black uppercase tracking-widest mb-2"
-          >
-            Rincian Aktivitas
-          </div>
-          <h2 class="text-3xl font-black tracking-tight leading-none uppercase">
-            {selectedLog.kategori}
+        <div>
+          <h2 class="text-2xl font-black uppercase tracking-tight">
+            Detail Aktivitas
           </h2>
         </div>
         <button
           onclick={() => (showViewDrawer = false)}
-          class="relative z-10 p-3 bg-white/10 hover:bg-white/20 rounded-2xl transition-all text-white"
+          class="p-3 bg-white border border-border rounded-2xl hover:bg-red-50 hover:text-red-500 transition-all"
           ><X size={24} /></button
         >
       </div>
-
       <!-- Content -->
       <div class="overflow-y-auto grow custom-scrollbar">
         <!-- Hero Image -->
@@ -1019,6 +1005,9 @@
         {/if}
 
         <div class="p-10 space-y-12">
+          <h2 class="text-3xl font-black tracking-tight leading-none uppercase">
+            {selectedLog.kategori}
+          </h2>
           <!-- Quick Metadata Grid -->
           <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
             <div
@@ -1152,25 +1141,6 @@
           </div>
         </div>
       </div>
-
-      <!-- Footer -->
-      <div
-        class="p-8 bg-muted/30 border-t border-border flex justify-end gap-3"
-      >
-        <button
-          onclick={() => {
-            showViewDrawer = false;
-            openEditForm(selectedLog!);
-          }}
-          class="px-8 py-4 bg-white border border-border font-black uppercase tracking-widest text-[10px] rounded-2xl hover:bg-muted transition-all"
-          >Edit Log</button
-        >
-        <button
-          onclick={() => (showViewDrawer = false)}
-          class="px-8 py-4 bg-emerald-600 text-white font-black uppercase tracking-widest text-[10px] rounded-2xl hover:bg-emerald-700 transition-all shadow-xl shadow-emerald-600/20"
-          >Selesai</button
-        >
-      </div>
     </div>
   </div>
 {/if}
@@ -1234,21 +1204,16 @@
     >
       <!-- Header -->
       <div
-        class="p-8 border-b border-border flex items-center justify-between bg-white text-slate-900 relative"
+        class="p-8 h-20 border-b border-border flex items-center justify-between bg-white text-slate-900 relative"
       >
         <div>
-          <div
-            class="inline-flex items-center gap-2 px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-[9px] font-black uppercase tracking-widest mb-2"
-          >
-            Riwayat Aktivitas
-          </div>
           <h2 class="text-3xl font-black tracking-tight leading-none uppercase">
             Timeline
           </h2>
         </div>
         <button
           onclick={() => (showTimelineDrawer = false)}
-          class="p-3 hover:bg-muted rounded-2xl transition-all"
+           class="p-3 bg-white border border-border rounded-2xl hover:bg-red-50 hover:text-red-500 transition-all"
           ><X size={24} /></button
         >
       </div>

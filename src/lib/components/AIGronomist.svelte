@@ -162,50 +162,41 @@
   class="flex flex-col h-full w-full bg-background relative border-none overflow-hidden shadow-2xl"
 >
   <!-- Immersive Header (Unified) -->
-  <div class="relative bg-emerald-900 px-8 py-6 overflow-hidden shrink-0">
-    <div class="absolute inset-0 z-0 opacity-30">
+  <div
+    class="bg-emerald-900 h-20 p-8 flex items-center justify-between overflow-hidden shrink-0"
+  >
+    <div class="flex items-center gap-4">
       <div
-        class="absolute top-0 right-0 w-32 h-32 bg-emerald-400 blur-3xl rounded-full translate-x-1/2 -translate-y-1/2"
-      ></div>
-      <div
-        class="absolute bottom-0 left-0 w-24 h-24 bg-blue-500 blur-3xl rounded-full -translate-x-1/2 translate-y-1/2"
-      ></div>
+        class="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white"
+      >
+        <BotMessageSquare size={28} />
+      </div>
+      <div>
+        <h3
+          class="font-black text-white tracking-tighter text-lg leading-none mb-1 uppercase"
+        >
+          AI-Gronomis
+        </h3>
+      </div>
     </div>
 
-    <div class="relative z-10 flex items-center justify-between">
-      <div class="flex items-center gap-4">
-        <div
-          class="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white"
-        >
-          <BotMessageSquare size={28} />
-        </div>
-        <div>
-          <h3
-            class="font-black text-white tracking-tighter text-lg leading-none mb-1 uppercase"
-          >
-            AI-Gronomis
-          </h3>
-        </div>
-      </div>
-
-      <div class="flex items-center gap-2">
+    <div class="flex items-center gap-2">
+      <button
+        onclick={clearChat}
+        class="p-3 rounded-xl bg-white/5 hover:bg-white/10 text-white/50 hover:text-white transition-all active:scale-95"
+        title="Bersihkan percakapan"
+      >
+        <Trash2 size={18} />
+      </button>
+      {#if onclose}
         <button
-          onclick={clearChat}
-          class="p-3 rounded-xl bg-white/5 hover:bg-white/10 text-white/50 hover:text-white transition-all active:scale-95"
-          title="Bersihkan percakapan"
+          onclick={onclose}
+          class="p-3 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-all active:scale-95 border border-white/10"
+          title="Tutup"
         >
-          <Trash2 size={18} />
+          <X size={20} />
         </button>
-        {#if onclose}
-          <button
-            onclick={onclose}
-            class="p-3 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-all active:scale-95 border border-white/10"
-            title="Tutup"
-          >
-            <X size={20} />
-          </button>
-        {/if}
-      </div>
+      {/if}
     </div>
   </div>
 

@@ -766,7 +766,7 @@
 
     <button
       onclick={openAddForm}
-      class="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white font-black uppercase tracking-widest text-[10px] p-4 md:py-4 md:px-8 rounded-2xl transition-all shadow-lg active:scale-95 whitespace-nowrap"
+      class="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-black uppercase tracking-widest text-[10px] p-4 md:py-4 md:px-8 rounded-2xl transition-all shadow-lg active:scale-95 whitespace-nowrap"
     >
       <Plus size={18} /> <span class="hidden md:inline">Tambah Monitoring</span>
     </button>
@@ -834,8 +834,9 @@
               <div class="relative group/tip">
                 <button
                   onclick={() => openMapForRecord(r)}
-                  class="p-3 bg-white rounded-xl text-slate-900 hover:scale-110 transition-transform"
-                  ><Map size={20} /></button
+                  class="p-3 bg-white rounded-xl text-emerald-600 hover:scale-110 transition-transform disabled:opacity-20 shadow-xl"
+                >
+                  <Map size={18} /></button
                 >
                 <div
                   class="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 px-3 py-1.5 bg-foreground text-background text-[10px] font-black uppercase tracking-widest rounded-lg opacity-0 pointer-events-none group-hover/tip:opacity-100 group-hover/tip:-translate-y-1 translate-y-0 transition-all duration-200 whitespace-nowrap z-50 shadow-xl"
@@ -853,8 +854,8 @@
                     selectedRecord = r;
                     showViewDrawer = true;
                   }}
-                  class="p-3 bg-white rounded-xl text-slate-900 hover:scale-110 transition-transform"
-                  ><Eye size={20} /></button
+                  class="p-3 bg-white rounded-xl text-emerald-600 hover:scale-110 transition-transform shadow-xl"
+                  ><Eye size={18} /></button
                 >
                 <div
                   class="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 px-3 py-1.5 bg-foreground text-background text-[10px] font-black uppercase tracking-widest rounded-lg opacity-0 pointer-events-none group-hover/tip:opacity-100 group-hover/tip:-translate-y-1 translate-y-0 transition-all duration-200 whitespace-nowrap z-50 shadow-xl"
@@ -869,8 +870,8 @@
               <div class="relative group/tip">
                 <button
                   onclick={() => openEditForm(r)}
-                  class="p-3 bg-white rounded-xl text-slate-900 hover:scale-110 transition-transform"
-                  ><Pencil size={20} /></button
+                  class="p-3 bg-white rounded-xl text-emerald-600 hover:scale-110 transition-transform shadow-xl"
+                  ><Pencil size={18} /></button
                 >
                 <div
                   class="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 px-3 py-1.5 bg-foreground text-background text-[10px] font-black uppercase tracking-widest rounded-lg opacity-0 pointer-events-none group-hover/tip:opacity-100 group-hover/tip:-translate-y-1 translate-y-0 transition-all duration-200 whitespace-nowrap z-50 shadow-xl"
@@ -888,8 +889,8 @@
                     deleteTarget = r;
                     showDeleteConfirm = true;
                   }}
-                  class="p-3 bg-red-500 rounded-xl text-white hover:scale-110 transition-transform"
-                  ><Trash2 size={20} /></button
+                  class="p-3 bg-red-500 rounded-xl text-white hover:scale-110 transition-transform shadow-xl"
+                  ><Trash2 size={18} /></button
                 >
                 <div
                   class="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 px-3 py-1.5 bg-red-600 text-white text-[10px] font-black uppercase tracking-widest rounded-lg opacity-0 pointer-events-none group-hover/tip:opacity-100 group-hover/tip:-translate-y-1 translate-y-0 transition-all duration-200 whitespace-nowrap z-50 shadow-xl"
@@ -974,28 +975,16 @@
       >
         <!-- Header -->
         <div
-          class="p-8 border-b border-border flex items-center justify-between bg-red-900 text-white relative overflow-hidden"
+          class="p-8 h-20 border-b border-border flex items-center justify-between bg-muted/30"
         >
-          <div class="absolute inset-0 opacity-10">
-            <div
-              class="absolute -top-1/2 -left-1/4 w-full h-[200%] bg-white blur-[100px] rounded-full"
-            ></div>
-          </div>
-          <div class="relative z-10">
-            <div
-              class="inline-flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur-md rounded-full border border-white/20 text-[9px] font-black uppercase tracking-widest mb-2"
-            >
-              Laporan • {isEditing ? "Pembaruan Data" : "Inventaris Temuan"}
-            </div>
-            <h2
-              class="text-3xl font-black tracking-tight leading-none uppercase"
-            >
-              {isEditing ? "Edit Temuan" : "Lapor HPG"}
+          <div>
+            <h2 class="text-2xl font-black uppercase tracking-tight">
+              {isEditing ? "Perbarui Data" : "Tambah Monitoring"}
             </h2>
           </div>
           <button
             onclick={() => (showFormDrawer = false)}
-            class="relative z-10 p-3 bg-white/10 hover:bg-white/20 rounded-2xl transition-all text-white"
+            class="p-3 bg-white border border-border rounded-2xl hover:bg-red-50 hover:text-red-500 transition-all"
             ><X size={24} /></button
           >
         </div>
@@ -1022,7 +1011,7 @@
               <div class="space-y-2">
                 <label
                   class="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1"
-                  >Tanggal</label
+                  >Tanggal Monitoring</label
                 >
                 <input
                   type="date"
@@ -1084,7 +1073,7 @@
               <div class="space-y-4">
                 <label
                   class="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1"
-                  >Bagian Tanaman Terserang</label
+                  >Bagian/area yang terdampak</label
                 >
                 <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
                   {#each ["akar", "batang", "cabang/ranting", "daun", "buah", "permukaan tanah"] as part}
@@ -1120,7 +1109,7 @@
                         >Tingkat Serangan</label
                       >
                       <p class="text-[10px] font-bold text-red-600/70">
-                        Estimasi bagian yang terdampak
+                        Estimasi area yang terdampak
                       </p>
                     </div>
                   </div>
@@ -1245,57 +1234,67 @@
               </div>
             </div>
 
+            <!-- Documentation -->
             <div class="space-y-4 pt-6 border-t border-border/50">
               <label
-                class="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1"
+                class="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1"
                 >Dokumentasi</label
               >
-              <div class="relative group">
-                <input
-                  type="file"
-                  bind:this={fileInput}
-                  onchange={handleFileChange}
-                  accept="image/*"
-                  class="hidden"
-                />
-                <button
-                  onclick={() => fileInput.click()}
-                  class="w-full aspect-video rounded-[2.5rem] border-2 border-dashed border-slate-200 bg-muted/20 flex flex-col items-center justify-center gap-4 group-hover:border-red-500/50 group-hover:bg-red-500/5 transition-all overflow-hidden relative"
-                >
-                  {#if formFoto}
-                    <img
-                      src={formFoto}
-                      alt=""
-                      class="w-full h-full object-cover"
-                    />
-                    <div
-                      class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"
+              <div
+                class="relative group h-64 bg-muted/30 rounded-[2.5rem] border-2 border-dashed border-border flex items-center justify-center overflow-hidden transition-all hover:border-emerald-500/50"
+              >
+                {#if formFoto}
+                  <img
+                    src={formFoto}
+                    alt="Preview"
+                    class="w-full h-full object-cover"
+                  />
+                  <div
+                    class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3"
+                  >
+                    <button
+                      type="button"
+                      onclick={() => fileInput.click()}
+                      class="p-4 bg-white rounded-2xl text-emerald-600 hover:scale-110 transition-transform"
+                      ><Camera size={24} /></button
                     >
-                      <div
-                        class="flex items-center gap-2 px-4 py-2 bg-white rounded-full text-[10px] font-black uppercase tracking-widest"
-                      >
-                        <Camera size={14} /> Ganti Foto
-                      </div>
-                    </div>
-                  {:else if uploading}
-                    <RefreshCw size={32} class="animate-spin text-red-500" />
-                    <span
-                      class="text-[10px] font-black uppercase tracking-widest text-slate-400"
-                      >Sedang mengunggah...</span
+                    <button
+                      type="button"
+                      onclick={() => (formFoto = "")}
+                      class="p-4 bg-red-500 rounded-2xl text-white hover:scale-110 transition-transform"
+                      ><Trash2 size={24} /></button
                     >
-                  {:else}
-                    <div
-                      class="p-5 bg-white shadow-xl rounded-2xl group-hover:scale-110 transition-transform"
+                  </div>
+                {:else}
+                  <div
+                    class="flex flex-col items-center gap-3 text-muted-foreground/40 group-hover:text-emerald-500/50"
+                  >
+                    <ImageIcon size={48} />
+                    <button
+                      type="button"
+                      onclick={() => fileInput.click()}
+                      class="text-[10px] font-black uppercase tracking-widest border border-current px-4 py-2 rounded-xl"
+                      >Upload Foto</button
                     >
-                      <ImageIcon size={32} class="text-slate-400" />
-                    </div>
-                    <span
-                      class="text-[10px] font-black uppercase tracking-widest text-slate-400"
-                      >Klik untuk ambil foto temuan</span
-                    >
-                  {/if}
-                </button>
+                  </div>
+                {/if}
+
+                {#if uploading}
+                  <div
+                    class="absolute inset-0 bg-white/60 backdrop-blur-sm flex items-center justify-center"
+                  >
+                    <RefreshCw size={32} class="animate-spin text-emerald-600" />
+                  </div>
+                {/if}
               </div>
+
+              <input
+                type="file"
+                bind:this={fileInput}
+                onchange={handleFileChange}
+                accept="image/*"
+                class="hidden"
+              />
             </div>
 
             <div class="space-y-2">
@@ -1314,7 +1313,7 @@
         </div>
 
         <div
-          class="p-8 border-t border-border bg-muted/30 flex justify-end gap-3"
+          class="p-8 h-20 border-t border-border bg-muted/30 flex items-center justify-end gap-3"
         >
           <button
             onclick={() => (showFormDrawer = false)}
@@ -1323,12 +1322,9 @@
           >
           <button
             onclick={handleSubmit}
-            disabled={loading || uploading}
-            class="px-8 py-4 bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white font-black uppercase tracking-widest text-[10px] rounded-2xl transition-all shadow-xl shadow-red-600/20 active:scale-95 flex items-center justify-center gap-3"
+            class="px-8 py-4 bg-emerald-600 text-white font-black uppercase tracking-widest text-[10px] rounded-2xl hover:bg-emerald-700 transition-all shadow-xl shadow-emerald-600/20"
+            >Simpan Data</button
           >
-            {#if loading}<RefreshCw size={14} class="animate-spin" />{/if}
-            {isEditing ? "Simpan Perubahan" : "Simpan Data"}
-          </button>
         </div>
       </div>
     </div>
@@ -1372,34 +1368,22 @@
       >
         <!-- Header -->
         <div
-          class="p-8 border-b border-border flex items-center justify-between bg-slate-900 text-white relative overflow-hidden"
+          class="p-8 h-20 border-b border-border flex items-center justify-between bg-muted/30"
         >
-          <div class="absolute inset-0 opacity-10">
-            <div
-              class="absolute -top-1/2 -left-1/4 w-full h-[200%] bg-white blur-[100px] rounded-full"
-            ></div>
-          </div>
-          <div class="relative z-10">
-            <div
-              class="inline-flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur-md rounded-full border border-white/20 text-[9px] font-black uppercase tracking-widest mb-2"
-            >
-              Detail Temuan • {selectedRecord.kategori_gangguan}
-            </div>
-            <h2
-              class="text-3xl font-black tracking-tight leading-none uppercase"
-            >
-              {selectedRecord.nama_jenis}
+          <div>
+            <h2 class="text-2xl font-black uppercase tracking-tight">
+              Detail Monitoring
             </h2>
           </div>
           <button
             onclick={() => (showViewDrawer = false)}
-            class="relative z-10 p-3 bg-white/10 hover:bg-white/20 rounded-2xl transition-all text-white"
+            class="p-3 bg-white border border-border rounded-2xl hover:bg-red-50 hover:text-red-500 transition-all"
             ><X size={24} /></button
           >
         </div>
 
         <div class="grow overflow-y-auto custom-scrollbar">
-          <div class="relative h-72 bg-slate-950 overflow-hidden">
+          <div class="relative h-72 overflow-hidden">
             {#if selectedRecord.foto}
               <img
                 src={selectedRecord.foto}
@@ -1413,9 +1397,7 @@
                 <Bug size={120} />
               </div>
             {/if}
-            <div
-              class="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent"
-            ></div>
+
             <div class="absolute bottom-8 left-8">
               <span
                 class="inline-flex items-center gap-2 px-4 py-2 {getSeverityColor(
@@ -1428,6 +1410,11 @@
           </div>
 
           <div class="p-10 space-y-12">
+            <h2
+              class="text-3xl font-black tracking-tight leading-none uppercase"
+            >
+              {selectedRecord.nama_jenis}
+            </h2>
             <div class="grid grid-cols-3 gap-8">
               <div class="space-y-1">
                 <p
@@ -1453,7 +1440,7 @@
                 <p
                   class="text-[9px] font-black text-slate-400 uppercase tracking-widest"
                 >
-                  Tanggal Lapor
+                  Tanggal Monitoring
                 </p>
                 <p class="text-base font-black text-slate-800">
                   {formatDate(selectedRecord.tanggal_monitoring)}
@@ -1536,27 +1523,6 @@
               <p class="text-base text-slate-600 font-medium leading-relaxed">
                 {selectedRecord.catatan || "Tidak ada catatan tambahan."}
               </p>
-            </div>
-
-            <div class="pt-8 flex gap-4">
-              <button
-                onclick={() => openMapForRecord(selectedRecord!)}
-                class="flex-1 py-4 bg-emerald-100 text-emerald-600 rounded-2xl font-black uppercase text-[10px] tracking-widest active:scale-95"
-                >Lihat di Peta</button
-              >
-              <button
-                onclick={() => openEditForm(selectedRecord!)}
-                class="flex-1 py-4 bg-slate-900 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-lg active:scale-95"
-                >Edit Laporan</button
-              >
-              <button
-                onclick={() => {
-                  deleteTarget = selectedRecord;
-                  showDeleteConfirm = true;
-                }}
-                class="px-8 py-4 bg-red-100 text-red-600 hover:bg-red-200 rounded-2xl font-black uppercase text-[10px] tracking-widest transition-colors"
-                >Hapus</button
-              >
             </div>
           </div>
         </div>
@@ -1652,19 +1618,9 @@
       >
         <!-- Header -->
         <div
-          class="p-8 border-b border-border flex items-center justify-between bg-amber-600 text-white relative overflow-hidden"
+          class="p-8 h-20 border-b border-border flex items-center justify-between bg-white text-slate-900 relative"
         >
-          <div class="absolute inset-0 opacity-10">
-            <div
-              class="absolute -top-1/2 -left-1/4 w-full h-[200%] bg-white blur-[100px] rounded-full"
-            ></div>
-          </div>
-          <div class="relative z-10">
-            <div
-              class="inline-flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur-md rounded-full border border-white/20 text-[9px] font-black uppercase tracking-widest mb-2"
-            >
-              Referensi • Pustaka Pengetahuan
-            </div>
+          <div>
             <h2
               class="text-3xl font-black tracking-tight leading-none uppercase"
             >
@@ -1673,27 +1629,32 @@
           </div>
           <button
             onclick={() => (showDirectoryDrawer = false)}
-            class="relative z-10 p-3 bg-white/10 hover:bg-white/20 rounded-2xl transition-all text-white"
+            class="p-3 bg-white border border-border rounded-2xl hover:bg-red-50 hover:text-red-500 transition-all"
             ><X size={24} /></button
           >
         </div>
 
-        <div class="p-6 bg-muted/20 border-b border-border">
-          <div class="relative group">
-            <Search
-              size={18}
-              class="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-amber-500 transition-colors"
-            />
-            <input
-              type="text"
-              bind:value={directorySearchQuery}
-              placeholder="Cari referensi hama/penyakit/gulma..."
-              class="w-full bg-background border-2 border-transparent focus:border-amber-500/50 rounded-2xl pl-12 pr-4 py-4 text-sm font-bold shadow-sm transition-all outline-none"
-            />
+        <div class="flex-1 overflow-y-auto p-8 pt-0 space-y-6 custom-scrollbar relative">
+          <!-- Floating Glass Search -->
+          <div class="sticky top-4 z-[100] pb-4 bg-card/0">
+            <div
+              class="flex flex-row items-center gap-3 bg-background/60 backdrop-blur-3xl p-3 md:p-4 rounded-[2rem] border border-border/50 shadow-2xl shadow-black/5 transition-all duration-500"
+            >
+              <div class="relative flex-1 group">
+                <Search
+                  size={18}
+                  class="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-amber-500 transition-colors"
+                />
+                <input
+                  type="text"
+                  bind:value={directorySearchQuery}
+                  placeholder="Cari referensi hama/penyakit/gulma..."
+                  class="w-full bg-transparent border-transparent focus:ring-0 rounded-2xl pl-11 pr-4 py-1 text-sm font-medium transition-all outline-none"
+                />
+              </div>
+            </div>
           </div>
-        </div>
 
-        <div class="flex-1 overflow-y-auto p-8 space-y-6 custom-scrollbar">
           {#if filteredDirektori.length === 0}
             <div class="py-20 text-center">
               <InfoIcon

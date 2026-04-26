@@ -310,7 +310,7 @@
               class="absolute -bottom-4 -right-4 p-5 bg-emerald-600 text-white rounded-[2rem] shadow-2xl shadow-emerald-500/40 hover:scale-110 active:scale-95 transition-all z-20"
               title="Ubah Avatar"
             >
-              <Camera size={24} />
+              <UserIcon size={24} />
             </button>
 
             <!-- Decorative Glow behind avatar -->
@@ -341,8 +341,17 @@
         out:fade
       >
         <AlertTriangle size={20} />
-        {profileError || passwordError || (showVerificationNotice ? "Cek email Anda untuk verifikasi" : "")}
-        <button onclick={() => { profileError = ""; passwordError = ""; showVerificationNotice = false; }} class="ml-4 opacity-50 hover:opacity-100 transition-opacity">
+        {profileError ||
+          passwordError ||
+          (showVerificationNotice ? "Cek email Anda untuk verifikasi" : "")}
+        <button
+          onclick={() => {
+            profileError = "";
+            passwordError = "";
+            showVerificationNotice = false;
+          }}
+          class="ml-4 opacity-50 hover:opacity-100 transition-opacity"
+        >
           <X size={16} />
         </button>
       </div>
@@ -356,7 +365,10 @@
       >
         <CheckCircle2 size={20} />
         Email berhasil dikonfirmasi!
-        <button onclick={() => (showEmailConfirmedNotice = false)} class="ml-4 opacity-50">
+        <button
+          onclick={() => (showEmailConfirmedNotice = false)}
+          class="ml-4 opacity-50"
+        >
           <X size={16} />
         </button>
       </div>
@@ -603,15 +615,12 @@
       onclick={(e) => e.stopPropagation()}
     >
       <div
-        class="p-8 border-b border-border flex items-center justify-between bg-muted/30"
+        class="p-8 h-20 border-b border-border flex items-center justify-between bg-muted/30"
       >
         <div>
           <h2 class="text-2xl font-black uppercase tracking-tight">
             Pilih Avatar
           </h2>
-          <p class="text-xs text-muted-foreground font-medium mt-1">
-            Gunakan persona visual sesuai kategori Anda.
-          </p>
         </div>
         <button
           onclick={() => (showAvatarModal = false)}
@@ -649,16 +658,16 @@
       </div>
 
       <div
-        class="p-8 bg-muted/30 border-t border-border flex justify-end gap-3"
+        class="p-8 h-20 bg-muted/30 border-t border-border flex items-center justify-end gap-3"
       >
         <button
           onclick={() => (showAvatarModal = false)}
-          class="px-8 py-3 bg-white border border-border font-black uppercase tracking-widest text-[10px] rounded-xl hover:bg-muted transition-all"
+          class="p-3 bg-white border border-border font-black uppercase tracking-widest text-[10px] rounded-xl hover:bg-muted transition-all"
           >Batal</button
         >
         <button
           onclick={handleSaveAvatar}
-          class="px-8 py-3 bg-emerald-600 text-white font-black uppercase tracking-widest text-[10px] rounded-xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-600/20"
+          class="p-3 bg-emerald-600 text-white font-black uppercase tracking-widest text-[10px] rounded-xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-600/20"
           >Terapkan Avatar</button
         >
       </div>

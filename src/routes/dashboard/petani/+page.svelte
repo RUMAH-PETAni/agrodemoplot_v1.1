@@ -796,15 +796,12 @@
       onclick={(e) => e.stopPropagation()}
     >
       <div
-        class="p-8 border-b border-border flex items-center justify-between bg-muted/30"
+        class="p-8 h-20 border-b border-border flex items-center justify-between bg-muted/30"
       >
         <div>
           <h2 class="text-2xl font-black uppercase tracking-tight">
             {isEditing ? "Perbarui Data" : "Tambah Petani"}
           </h2>
-          <p class="text-xs text-muted-foreground font-medium mt-1">
-            Lengkapi informasi detail pengelola lahan di bawah ini.
-          </p>
         </div>
         <button
           onclick={closeModal}
@@ -842,7 +839,7 @@
                     type="button"
                     onclick={() => (showAvatarSelection = true)}
                     class="p-3 bg-white rounded-xl text-emerald-600 hover:scale-110 transition-transform"
-                    title="Pilih Avatar"><Smile size={20} /></button
+                    title="Pilih Avatar"><User size={20} /></button
                   >
                   <button
                     type="button"
@@ -1083,16 +1080,16 @@
       </div>
 
       <div
-        class="p-8 bg-muted/30 border-t border-border flex justify-end gap-3"
+        class="p-8 h-20 bg-muted/30 border-t border-border flex flex items-center justify-end gap-3"
       >
         <button
           onclick={closeModal}
-          class="px-8 py-3 bg-white border border-border font-black uppercase tracking-widest text-[10px] rounded-xl hover:bg-muted transition-all"
+          class="p-3 bg-white border border-border font-black uppercase tracking-widest text-[10px] rounded-xl hover:bg-muted transition-all"
           >Batal</button
         >
         <button
           onclick={handleSubmit}
-          class="px-8 py-3 bg-emerald-600 text-white font-black uppercase tracking-widest text-[10px] rounded-xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-600/20 text-white"
+          class="p-3 bg-emerald-600 text-white font-black uppercase tracking-widest text-[10px] rounded-xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-600/20 text-white"
           >Simpan Data</button
         >
       </div>
@@ -1107,33 +1104,34 @@
   </div>
 {/if}
 
-<!-- Avatar Selection Overlay (Drawer-in-Drawer style) -->
+<!-- Avatar Selection Overlay -->
 {#if showAvatarSelection}
   <div
-    class="fixed inset-0 bg-black/40 backdrop-blur-sm z-[3000] flex justify-end"
+    class="fixed inset-0 bg-background/60 backdrop-blur-xl z-[2000] flex items-center justify-center p-6"
     transition:fade
     onclick={() => (showAvatarSelection = false)}
   >
     <div
-      class="h-full w-full max-w-sm bg-card border-l border-border shadow-2xl flex flex-col"
-      in:fly={{ x: 400, duration: 400, easing: backOut }}
-      out:fly={{ x: 400, duration: 300 }}
+      class="w-full max-w-2xl bg-card border border-border shadow-2xl rounded-[2.5rem] overflow-hidden flex flex-col max-h-[90vh]"
+      in:fly={{ y: 20, duration: 400 }}
       onclick={(e) => e.stopPropagation()}
     >
-      <div class="p-8 border-b border-border flex items-center justify-between">
+      <div
+        class="p-8 h-20 border-b border-border flex items-center justify-between"
+      >
         <h3 class="text-xl font-black uppercase tracking-tight">
           Pilih Avatar
         </h3>
         <button
           onclick={() => (showAvatarSelection = false)}
-          class="p-2 hover:bg-muted rounded-xl transition-all"
+          class="p-3 bg-white border border-border rounded-2xl hover:bg-red-50 hover:text-red-500 transition-all"
         >
-          <X size={20} />
+          <X size={24} />
         </button>
       </div>
 
-      <div class="grow overflow-y-auto p-8">
-        <div class="grid grid-cols-2 gap-4">
+      <div class="p-8 overflow-y-auto">
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6">
           {#each avatarImages as avatar}
             {@const fullPath = `/avatar/${avatar}`}
             <button
@@ -1143,19 +1141,20 @@
               }}
               class="relative aspect-square rounded-2xl overflow-hidden border-2 transition-all p-1
               {fotoProfil === fullPath
-                ? 'border-emerald-500 bg-emerald-500/10'
-                : 'border-transparent hover:border-emerald-500/30'}"
+                ? 'border-emerald-500 ring-4 ring-emerald-500/20 scale-105'
+                : 'border-border hover:border-emerald-500/50'}"
             >
               <img
                 src={fullPath}
                 alt="Avatar"
-                class="w-full h-full object-cover rounded-xl"
+                class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
               />
               {#if fotoProfil === fullPath}
                 <div
-                  class="absolute top-2 right-2 bg-emerald-500 text-white p-1 rounded-lg"
+                  class="absolute inset-0 bg-emerald-500/20 flex items-center justify-center"
+                  in:scale
                 >
-                  <CheckCircle2 size={12} />
+                  <CheckCircle2 size={32} class="text-white drop-shadow-lg" />
                 </div>
               {/if}
             </button>
@@ -1223,7 +1222,7 @@
       onclick={(e) => e.stopPropagation()}
     >
       <div
-        class="p-8 border-b border-border flex items-center justify-between bg-muted/30"
+        class="p-8 h-20 border-b border-border flex items-center justify-between bg-muted/30"
       >
         <div>
           <h2 class="text-2xl font-black uppercase tracking-tight">
@@ -1528,16 +1527,6 @@
             </div>
           </div>
         </div>
-      </div>
-
-      <div
-        class="p-8 bg-muted/30 border-t border-border flex justify-end gap-3"
-      >
-        <button
-          onclick={() => (showViewModal = false)}
-          class="px-8 py-3 bg-emerald-600 text-white font-black uppercase tracking-widest text-[10px] rounded-xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-600/20 text-white"
-          >Selesai</button
-        >
       </div>
     </div>
   </div>

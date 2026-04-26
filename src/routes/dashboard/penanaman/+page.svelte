@@ -1059,19 +1059,16 @@
     >
       <!-- Drawer Header -->
       <div
-        class="p-8 border-b border-border flex items-center justify-between bg-muted/30"
+        class="p-8 h-20 border-b border-border flex items-center justify-between bg-muted/30"
       >
         <div>
           <h2 class="text-2xl font-black uppercase tracking-tight">
-            {isEditing ? "Perbarui Monitoring" : "Input Monitoring"}
+            {isEditing ? "Perbarui Data" : "Tambah Monitoring"}
           </h2>
-          <p class="text-xs text-muted-foreground font-medium mt-1">
-            Pantau pertumbuhan tanaman secara periodik.
-          </p>
         </div>
         <button
           onclick={() => (showFormDrawer = false)}
-          class="p-3 hover:bg-red-50 hover:text-red-500 rounded-2xl transition-all"
+          class="p-3 bg-white border border-border rounded-2xl hover:bg-red-50 hover:text-red-500 transition-all"
           ><X size={24} /></button
         >
       </div>
@@ -1099,7 +1096,7 @@
           <div class="space-y-2">
             <label
               class="text-[10px] font-black uppercase tracking-widest text-muted-foreground"
-              >Tanggal Monitor</label
+              >Tanggal Monitoring</label
             >
             <input
               type="date"
@@ -1184,7 +1181,7 @@
                 <input
                   type="text"
                   bind:value={formJenisTanaman}
-                  placeholder="Contoh: Kopi Arabika"
+                  placeholder="Contoh: Kopi Robusta"
                   class="w-full bg-muted/30 border-border rounded-xl p-4 text-sm font-bold"
                 />
               </div>
@@ -1196,7 +1193,7 @@
                 <input
                   type="text"
                   bind:value={formNamaIlmiah}
-                  placeholder="Contoh: Coffea arabica"
+                  placeholder="Contoh: Coffea canephora"
                   class="w-full bg-muted/30 border-border rounded-xl p-4 text-sm font-bold"
                 />
               </div>
@@ -1333,7 +1330,7 @@
         <div class="space-y-4 pt-6 border-t border-border/50">
           <label
             class="text-[10px] font-black uppercase tracking-widest text-muted-foreground"
-            >Foto Tanaman</label
+            >Dokumentasi</label
           >
           <div
             class="relative group h-64 bg-muted/30 rounded-[2.5rem] border-2 border-dashed border-border flex items-center justify-center overflow-hidden transition-all hover:border-emerald-500/50"
@@ -1400,7 +1397,7 @@
 
       <!-- Drawer Footer -->
       <div
-        class="p-8 bg-muted/30 border-t border-border flex justify-end gap-3"
+        class="p-8 h-20 bg-muted/30 border-t border-border flex items-center justify-end gap-3"
       >
         <button
           onclick={() => (showFormDrawer = false)}
@@ -1513,27 +1510,16 @@
     >
       <!-- Header -->
       <div
-        class="p-8 border-b border-border flex items-center justify-between bg-emerald-900 text-white relative overflow-hidden"
+        class="p-8 h-20 border-b border-border flex items-center justify-between bg-muted/30"
       >
-        <div class="absolute inset-0 opacity-10">
-          <div
-            class="absolute -top-1/2 -left-1/4 w-full h-[200%] bg-white blur-[100px] rounded-full"
-          ></div>
-        </div>
-        <div class="relative z-10">
-          <div
-            class="inline-flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur-md rounded-full border border-white/20 text-[9px] font-black uppercase tracking-widest mb-2"
-          >
-            ID: {selectedRecord.kode_tanaman} • Rincian Monitoring
-          </div>
-          <h2 class="text-3xl font-black tracking-tight leading-none uppercase">
-            {selectedRecord.jenis_tanaman}
+        <div>
+          <h2 class="text-2xl font-black uppercase tracking-tight">
+            Detail Monitoring
           </h2>
         </div>
-
         <button
           onclick={() => (showViewDrawer = false)}
-          class="relative z-10 p-3 bg-white/10 hover:bg-white/20 rounded-2xl transition-all text-white"
+          class="p-3 bg-white border border-border rounded-2xl hover:bg-red-50 hover:text-red-500 transition-all"
           ><X size={24} /></button
         >
       </div>
@@ -1577,6 +1563,14 @@
         </div>
 
         <div class="p-10 space-y-12">
+           <div
+            class="inline-flex items-center gap-2 py-1 bg-white/10 backdrop-blur-md rounded-full border border-white/20 text-[9px] font-black uppercase tracking-widest mb-2"
+          >
+            ID: {selectedRecord.kode_tanaman}
+          </div>
+          <h2 class="text-3xl font-black tracking-tight leading-none uppercase">
+            {selectedRecord.jenis_tanaman}
+          </h2>
           <!-- Quick Metadata Grid -->
           <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div
@@ -1771,7 +1765,7 @@
                 <h3
                   class="text-sm font-black uppercase tracking-[0.2em] text-blue-600"
                 >
-                  Geolokasi
+                  Geo-Tagging
                 </h3>
               </div>
               <div class="grid grid-cols-3 gap-4">
@@ -1871,25 +1865,6 @@
             </div>
           </div>
         </div>
-      </div>
-
-      <!-- Footer -->
-      <div
-        class="p-8 bg-muted/30 border-t border-border flex justify-end gap-3"
-      >
-        <button
-          onclick={() => {
-            showViewDrawer = false;
-            openEditForm(selectedRecord!);
-          }}
-          class="px-8 py-4 bg-white border border-border font-black uppercase tracking-widest text-[10px] rounded-2xl hover:bg-muted transition-all"
-          >Edit Data</button
-        >
-        <button
-          onclick={() => (showViewDrawer = false)}
-          class="px-8 py-4 bg-emerald-600 text-white font-black uppercase tracking-widest text-[10px] rounded-2xl hover:bg-emerald-700 transition-all shadow-xl shadow-emerald-600/20"
-          >Selesai</button
-        >
       </div>
     </div>
   </div>

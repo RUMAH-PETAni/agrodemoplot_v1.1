@@ -2,19 +2,84 @@
   import { marked } from "marked";
   import DOMPurify from "dompurify";
   import { browser } from "$app/environment";
-  import { page } from "$app/stores";
   import { ShieldCheck, Calendar, ArrowLeft } from "@lucide/svelte";
   import { fade, fly } from "svelte/transition";
 
-  let privacyContent = $state("");
+  const rawMarkdown = `Kami menghargai privasi Anda dan berkomitmen untuk melindungi data pribadi yang Anda berikan kepada kami. Dokumen ini menjelaskan bagaimana kami mengumpulkan, menggunakan, menyimpan, dan membagikan informasi pribadi Anda saat menggunakan platform kami.
 
-  $effect(() => {
-    if ($page.data.privacyContent) {
-      const rawHtml = marked.parse($page.data.privacyContent);
-      privacyContent = browser ? DOMPurify.sanitize(rawHtml as string) : rawHtml as string;
-    }
-  });
+Dengan menggunakan situs web, aplikasi, dan layanan ("Platform"), Anda menyetujui praktik yang dijelaskan dalam Kebijakan Privasi ini.
+
+---
+
+### **1. Informasi yang Kami Kumpulkan**
+
+Kami mungkin mengumpulkan:
+
+- Detail akun (email, nama, jenis kelamin, nomor telepon dan alamat)
+- Data lokasi lahan (koordinat dan input alamat)
+- Data teknis seperti alamat IP, tipe perangkat, dan aktivitas platform
+
+---
+
+### **2. Cara Kami Menggunakan Informasi**
+
+Data Anda digunakan untuk:
+
+- Mengelola akun pengguna dan otentikasi
+- Menyediakan layanan sistem monitoring dan manajemen kebun
+- Meningkatkan pengalaman pengguna dan fitur platform
+- Mengirimkan pemberitahuan terkait layanan
+
+---
+
+### **3. Penyimpanan dan Keamanan Data**
+
+Data disimpan secara aman menggunakan penyedia pihak ketiga dengan langkah-langkah keamanan yang sesuai untuk mencegah akses atau penghapusan yang tidak sah. Namun, Anda memahami bahwa tidak ada metode transmisi data melalui internet yang sepenuhnya aman. Oleh karena itu, kami tidak dapat menjamin keamanan mutlak dari data yang Anda kirimkan kepada kami.
+
+---
+
+### **4. Berbagi Data**
+
+Kami **tidak menjual atau menyewakan** data pribadi Anda. Data hanya dibagikan dengan penyedia layanan yang membantu dalam operasi aplikasi di bawah perlindungan privasi yang serupa.
+
+---
+
+### **5. Hak Pengguna**
+
+Anda dapat meminta pembaruan atau penghapusan data Anda dengan mengirimkan email ke: **Administrator**
+
+---
+
+### **6. Pembaruan Kebijakan**
+
+Kebijakan ini dapat diperbarui dari waktu ke waktu. Versi terbaru akan selalu tersedia di platform kami.
+
+---
+
+### **7. Kontak**
+
+Untuk pertanyaan atau kekhawatiran tentang privasi, hubungi: **Administrator**
+
+---
+
+## **Pengumpulan Data Pribadi Sensitif**
+
+Kami mungkin mengumpulkan informasi pribadi sensitif seperti **Nomor Induk Kependudukan (NIK)**, alamat lengkap, dan detail kepemilikan lahan. Data ini dikumpulkan **hanya untuk tujuan verifikasi identitas dan manajemen lahan**. Kami memastikan keamanan dan kerahasiaan data tersebut dengan:
+
+- Menyimpan semua data sensitif terenkripsi di server aman
+- Tidak pernah menampilkan NIK atau identitas serupa di area publik aplikasi
+- Tidak pernah membagikan data sensitif kepada pihak ketiga tanpa persetujuan eksplisit pengguna
+- Mengizinkan pengguna untuk meminta penghapusan data mereka kapan saja melalui **Administrator**
+`;
+
+  const rawHtml = marked.parse(rawMarkdown) as string;
+  const privacyContent = browser ? DOMPurify.sanitize(rawHtml) : rawHtml;
 </script>
+
+<svelte:head>
+  <title>Kebijakan Privasi — Agrodemoplot</title>
+  <meta name="description" content="Kebijakan privasi Agrodemoplot menjelaskan bagaimana kami mengumpulkan, menggunakan, dan melindungi data pribadi Anda." />
+</svelte:head>
 
 <div class="min-h-screen pt-32 pb-20 px-6 max-w-4xl mx-auto">
   <!-- Nav Back -->
@@ -55,26 +120,15 @@
     class="bg-card/50 backdrop-blur-xl border border-border rounded-[2.5rem] p-8 md:p-16 shadow-2xl shadow-emerald-900/5 dark:shadow-emerald-100/5"
     in:fade={{ duration: 1000, delay: 200 }}
   >
-    {#if privacyContent}
-      <article
-        class="prose prose-emerald dark:prose-invert max-w-none
-        prose-headings:text-foreground prose-headings:font-black prose-headings:tracking-tighter prose-headings:uppercase
-        prose-p:text-muted-foreground prose-p:leading-relaxed prose-p:text-lg
-        prose-strong:text-foreground prose-strong:font-black
-        prose-ul:text-muted-foreground prose-li:marker:text-emerald-500"
-      >
-        {@html privacyContent}
-      </article>
-    {:else}
-      <div class="space-y-6">
-        <div class="h-8 bg-muted animate-pulse rounded-lg w-1/3"></div>
-        <div class="space-y-3">
-          <div class="h-4 bg-muted animate-pulse rounded-lg w-full"></div>
-          <div class="h-4 bg-muted animate-pulse rounded-lg w-full"></div>
-          <div class="h-4 bg-muted animate-pulse rounded-lg w-3/4"></div>
-        </div>
-      </div>
-    {/if}
+    <article
+      class="prose prose-emerald dark:prose-invert max-w-none
+      prose-headings:text-foreground prose-headings:font-black prose-headings:tracking-tighter prose-headings:uppercase
+      prose-p:text-muted-foreground prose-p:leading-relaxed prose-p:text-lg
+      prose-strong:text-foreground prose-strong:font-black
+      prose-ul:text-muted-foreground prose-li:marker:text-emerald-500"
+    >
+      {@html privacyContent}
+    </article>
   </div>
 
   <!-- Support Footer -->

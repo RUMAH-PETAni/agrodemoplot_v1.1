@@ -52,7 +52,7 @@
       category: "Support",
       question: "Bagaimana cara menghubungi kami?",
       answer:
-        "Anda dapat menghubungi tim dukungan kami melalui email ke Administrator: ikurniawan.consultant@gmail.com. Kami biasanya merespons dalam waktu 24 jam kerja.",
+        "Anda dapat menghubungi tim dukungan kami melalui email. Kami biasanya merespons dalam waktu 24 jam kerja.",
     },
   ];
 

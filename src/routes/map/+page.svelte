@@ -6,6 +6,9 @@
     Map as MapIcon,
     Layers,
     Navigation,
+    CircleDotDashed,
+    Leaf,
+    FlaskConical,
     Search,
     MapPin,
     Sprout,
@@ -431,6 +434,18 @@
       alert("Browser Anda tidak mendukung geolokasi.");
     }
   }
+
+  // Disable body scroll when drawer is open
+  $effect(() => {
+    if (selectedPlot) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  });
 </script>
 
 <div
@@ -737,7 +752,7 @@
                 <div
                   class="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500"
                 >
-                  <Compass size={18} />
+                  <FlaskConical size={18} />
                 </div>
                 <span class="text-sm font-bold">Tingkat Keasaman</span>
               </div>
@@ -753,7 +768,7 @@
                 <div
                   class="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-500"
                 >
-                  <Activity size={18} />
+                  <Leaf size={18} />
                 </div>
                 <span class="text-sm font-bold">C-Organic</span>
               </div>
@@ -769,7 +784,7 @@
                 <div
                   class="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500"
                 >
-                  <Layers size={18} />
+                  <CircleDotDashed size={18} />
                 </div>
                 <span class="text-sm font-bold">Nitrogen</span>
               </div>
@@ -792,7 +807,7 @@
               <p
                 class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1"
               >
-                Luas Lahan
+                Luas Demoplot
               </p>
               <p class="text-lg font-black">
                 {selectedPlot.luas_demoplot || 0} Hektar
@@ -809,24 +824,6 @@
               </p>
             </div>
           </div>
-        </div>
-
-        <!-- Actions -->
-        <div class="pt-6 flex flex-col gap-4">
-          <a
-            href="/insight/tanah-iklim?id={selectedPlot.id}"
-            class="group/btn w-full bg-emerald-600 text-white p-5 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-emerald-500 transition-all shadow-xl shadow-emerald-900/20"
-          >
-            Buka Insight Mendalam <ArrowUpRight
-              size={18}
-              class="group-hover/btn:translate-x-1 group-hover/btn:-translate-y-1 transition-transform"
-            />
-          </a>
-          <button
-            class="w-full bg-white/5 border border-white/10 text-white p-5 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-white/10 transition-all"
-          >
-            Log Aktivitas <ChevronRight size={18} />
-          </button>
         </div>
       </div>
     </div>

@@ -210,7 +210,7 @@
               <!-- Compact HUD -->
               <div class="grid grid-cols-2 gap-4">
                 <div
-                  class="bg-card/40 backdrop-blur-2xl p-5 rounded-[2rem] border border-border shadow-xl flex items-center gap-4"
+                  class="bg-card/40 backdrop-blur-2xl p-5 rounded-[2rem] border border-border shadow-xl flex items-center gap-4 transition-all duration-500 hover:border-emerald-500/50 hover:-translate-y-1 hover:shadow-2xl active:scale-95"
                 >
                   <div
                     class="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 shrink-0"
@@ -232,7 +232,7 @@
                 </div>
 
                 <div
-                  class="bg-card/40 backdrop-blur-2xl p-5 rounded-[2rem] border border-border shadow-xl flex items-center gap-4"
+                  class="bg-card/40 backdrop-blur-2xl p-5 rounded-[2rem] border border-border shadow-xl flex items-center gap-4 transition-all duration-500 hover:border-emerald-500/50 hover:-translate-y-1 hover:shadow-2xl active:scale-95"
                 >
                   <div
                     class="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500 shrink-0"

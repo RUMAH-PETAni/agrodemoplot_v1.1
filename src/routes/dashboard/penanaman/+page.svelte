@@ -981,7 +981,8 @@
                   {formatDate(r.tanggal_monitoring)}
                 </div>
                 <div class="flex items-center gap-1">
-                  <Activity size={14} /> P{r.periode_monitoring}
+                  <Activity size={14} />
+                  {r.periode_monitoring}
                 </div>
               </div>
             </div>
@@ -1127,9 +1128,9 @@
               bind:value={formPeriode}
               class="w-full bg-muted/30 border-border rounded-xl p-4 text-sm font-bold"
             >
-              <option value="P1">P1 (Fase Awal)</option>
-              <option value="P2">P2 (Pertumbuhan)</option>
-              <option value="P3">P3 (Masa Panen)</option>
+              <option value="P1">P1 (Awal)</option>
+              <option value="P2">P2 (Tengah)</option>
+              <option value="P3">P3 (Akhir)</option>
             </select>
           </div>
         </div>
@@ -1563,7 +1564,7 @@
         </div>
 
         <div class="p-10 space-y-12">
-           <div
+          <div
             class="inline-flex items-center gap-2 py-1 bg-white/10 backdrop-blur-md rounded-full border border-white/20 text-[9px] font-black uppercase tracking-widest mb-2"
           >
             ID: {selectedRecord.kode_tanaman}
@@ -1628,7 +1629,7 @@
                 Periode
               </p>
               <p class="text-xl font-black text-foreground">
-                P{selectedRecord.periode_monitoring}
+                {selectedRecord.periode_monitoring}
               </p>
             </div>
           </div>

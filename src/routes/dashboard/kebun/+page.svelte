@@ -937,7 +937,7 @@
       class="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-black uppercase tracking-widest text-[10px] py-4 px-6 md:px-8 rounded-2xl transition-all shadow-lg shadow-emerald-600/20 active:scale-95 whitespace-nowrap"
     >
       <Plus size={18} />
-      <span class="hidden md:inline">Tambah Lahan</span>
+      <span class="hidden md:inline">Tambah Plot</span>
     </button>
   </div>
 
@@ -1053,7 +1053,7 @@
                 <p
                   class="text-[8px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-1"
                 >
-                  Luas Lahan
+                  Luas Plot
                 </p>
                 <div class="flex items-center gap-2">
                   <LandPlot size={14} class="text-emerald-500" />
@@ -1211,7 +1211,7 @@
       >
         <div>
           <h2 class="text-2xl font-black uppercase tracking-tight">
-            {isEditing ? "Perbarui Data" : "Tambah Lahan"}
+            {isEditing ? "Perbarui Data" : "Tambah Plot"}
           </h2>
         </div>
         <button
@@ -1368,19 +1368,25 @@
               >
                 {#if polygonFileName}
                   <div class="flex flex-col items-center gap-4 text-center p-8">
-                    <div class="w-20 h-20 bg-emerald-500/10 text-emerald-600 rounded-3xl flex items-center justify-center shadow-xl shadow-emerald-500/5 border border-emerald-500/20">
+                    <div
+                      class="w-20 h-20 bg-emerald-500/10 text-emerald-600 rounded-3xl flex items-center justify-center shadow-xl shadow-emerald-500/5 border border-emerald-500/20"
+                    >
                       <Layers size={40} />
                     </div>
                     <div>
-                      <p class="text-sm font-black text-foreground max-w-xs truncate px-4">
+                      <p
+                        class="text-sm font-black text-foreground max-w-xs truncate px-4"
+                      >
                         {polygonFileName}
                       </p>
-                      <p class="text-[10px] font-bold text-emerald-600 uppercase tracking-widest mt-1">
+                      <p
+                        class="text-[10px] font-bold text-emerald-600 uppercase tracking-widest mt-1"
+                      >
                         File Spasial Terpasang
                       </p>
                     </div>
                   </div>
-                  
+
                   <div
                     class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3"
                   >
@@ -1388,17 +1394,17 @@
                       type="button"
                       onclick={() => polygonInput?.click()}
                       class="p-4 bg-white rounded-2xl text-emerald-600 hover:scale-110 transition-transform"
-                      title="Ganti File"
-                    ><RefreshCw size={24} /></button>
+                      title="Ganti File"><RefreshCw size={24} /></button
+                    >
                     <button
                       type="button"
-                      onclick={() => { 
-                        formPolygon = null; 
-                        polygonFileName = ""; 
+                      onclick={() => {
+                        formPolygon = null;
+                        polygonFileName = "";
                       }}
                       class="p-4 bg-red-500 rounded-2xl text-white hover:scale-110 transition-transform"
-                      title="Hapus"
-                    ><Trash2 size={24} /></button>
+                      title="Hapus"><Trash2 size={24} /></button
+                    >
                   </div>
                 {:else}
                   <div
@@ -1409,8 +1415,11 @@
                       type="button"
                       onclick={() => polygonInput?.click()}
                       class="text-[10px] font-black uppercase tracking-widest border border-current px-4 py-2 rounded-xl"
-                    >Upload GeoJSON</button>
-                    <p class="text-[9px] font-medium opacity-60">Format: .json, .geojson</p>
+                      >Upload GeoJSON</button
+                    >
+                    <p class="text-[9px] font-medium opacity-60">
+                      Format: .json, .geojson
+                    </p>
                   </div>
                 {/if}
               </div>
@@ -1582,7 +1591,7 @@
             <div class="space-y-2">
               <label
                 class="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1"
-                >KTK (meq/100g)</label
+                >KTK (cmol/kg)</label
               >
               <input
                 type="number"
@@ -1823,7 +1832,7 @@
             <p
               class="text-[9px] font-black text-emerald-600 uppercase tracking-widest mb-2"
             >
-              Luas Lahan
+              Luas Plot
             </p>
             <div class="flex items-baseline gap-2">
               <span class="text-4xl font-black text-emerald-700"

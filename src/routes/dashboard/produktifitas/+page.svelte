@@ -550,21 +550,44 @@
               <div
                 class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
               >
-                <button
-                  onclick={() => openEditForm(r)}
-                  class="p-2 hover:bg-muted rounded-xl transition-colors"
-                >
-                  <Pencil size={14} class="text-slate-500" />
-                </button>
-                <button
-                  onclick={() => {
-                    deleteTarget = r;
-                    showDeleteConfirm = true;
-                  }}
-                  class="p-2 hover:bg-red-50/50 rounded-xl transition-colors"
-                >
-                  <Trash2 size={14} class="text-red-500" />
-                </button>
+                <div class="relative group/tip">
+                  <button
+                    onclick={() => openEditForm(r)}
+                    class="p-2 hover:bg-muted rounded-xl transition-colors"
+                  >
+                    <Pencil size={14} class="text-slate-500" />
+                  </button>
+                  <!-- Tooltip -->
+                  <div
+                    class="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 px-3 py-1.5 bg-foreground text-background text-[10px] font-black uppercase tracking-widest rounded-lg opacity-0 pointer-events-none group-hover/tip:opacity-100 group-hover/tip:-translate-y-1 translate-y-1 transition-all duration-200 whitespace-nowrap z-50 shadow-xl"
+                  >
+                    Edit
+                    <div
+                      class="absolute top-full left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-foreground rotate-45"
+                    ></div>
+                  </div>
+                </div>
+
+                <div class="relative group/tip">
+                  <button
+                    onclick={() => {
+                      deleteTarget = r;
+                      showDeleteConfirm = true;
+                    }}
+                    class="p-2 hover:bg-red-50/50 rounded-xl transition-colors"
+                  >
+                    <Trash2 size={14} class="text-red-500" />
+                  </button>
+                  <!-- Tooltip -->
+                  <div
+                    class="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 px-3 py-1.5 bg-foreground text-background text-[10px] font-black uppercase tracking-widest rounded-lg opacity-0 pointer-events-none group-hover/tip:opacity-100 group-hover/tip:-translate-y-1 translate-y-1 transition-all duration-200 whitespace-nowrap z-50 shadow-xl"
+                  >
+                    Hapus
+                    <div
+                      class="absolute top-full left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-foreground rotate-45"
+                    ></div>
+                  </div>
+                </div>
               </div>
             </div>
 

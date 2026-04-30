@@ -397,9 +397,7 @@
 
   <!-- History & Archives -->
   <section class="space-y-8">
-    <div
-      class="flex flex-col md:flex-row md:items-center justify-between gap-6 px-2"
-    >
+    <div class="flex items-end justify-between px-2">
       <div class="space-y-1">
         <h2 class="text-3xl font-black tracking-tight uppercase">
           Riwayat Dokumen
@@ -408,10 +406,13 @@
           Daftar laporan yang telah digenerate sebelumnya.
         </p>
       </div>
-
+    </div>
+    <div
+      class="flex flex-col md:flex-row md:items-center justify-between gap-6 px-2"
+    >
       <!-- Action Bar -->
-      <div class="flex flex-wrap items-center gap-3">
-        <div class="relative group min-w-[280px]">
+      <div class="flex flex-wrap w-full items-center gap-3">
+        <div class="relative flex-1 w-full group">
           <Search
             size={18}
             class="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-emerald-500 transition-colors"
@@ -444,7 +445,7 @@
 
     <!-- Table/List Area -->
     <div
-      class="bg-card/40 backdrop-blur-3xl border border-border rounded-[3rem] overflow-hidden shadow-2xl"
+      class="bg-card/40 backdrop-blur-3xl border border-border rounded-md overflow-hidden shadow-2xl"
     >
       <div class="overflow-x-auto">
         <table class="w-full text-left border-collapse">
@@ -539,29 +540,61 @@
                 </td>
                 <td class="px-8 py-6 text-right">
                   <div class="flex items-center justify-end gap-2">
-                    <a
-                      href={rpt.file_url}
-                      target="_blank"
-                      class="p-2.5 hover:bg-muted rounded-xl transition-colors text-muted-foreground"
-                      title="Buka Dokumen"
-                    >
-                      <ExternalLink size={18} />
-                    </a>
-                    <a
-                      href={rpt.file_url}
-                      download
-                      class="p-2.5 bg-emerald-600/10 text-emerald-600 hover:bg-emerald-600 hover:text-white rounded-xl transition-all shadow-sm"
-                      title="Download"
-                    >
-                      <Download size={18} />
-                    </a>
-                    <button
-                      onclick={() => handleDelete(rpt)}
-                      class="p-2.5 hover:bg-rose-500/10 hover:text-rose-500 rounded-xl transition-all text-muted-foreground"
-                      title="Hapus"
-                    >
-                      <Trash2 size={18} />
-                    </button>
+                    <div class="relative group/tooltip">
+                      <a
+                        href={rpt.file_url}
+                        target="_blank"
+                        class="block p-2.5 hover:bg-muted rounded-xl transition-colors text-muted-foreground"
+                      >
+                        <ExternalLink size={18} />
+                      </a>
+                      <!-- Tooltip -->
+                      <div
+                        class="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 px-3 py-1.5 bg-foreground text-background text-[10px] font-black uppercase tracking-widest rounded-lg opacity-0 pointer-events-none group-hover/tooltip:opacity-100 group-hover/tooltip:-translate-y-1 translate-y-1 transition-all duration-200 whitespace-nowrap z-50 shadow-xl"
+                      >
+                        Buka Dokumen
+                        <div
+                          class="absolute top-full left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-foreground rotate-45"
+                        ></div>
+                      </div>
+                    </div>
+
+                    <div class="relative group/tooltip">
+                      <a
+                        href={rpt.file_url}
+                        download
+                        class="block p-2.5 bg-emerald-600/10 text-emerald-600 hover:bg-emerald-600 hover:text-white rounded-xl transition-all shadow-sm"
+                      >
+                        <Download size={18} />
+                      </a>
+                      <!-- Tooltip -->
+                      <div
+                        class="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 px-3 py-1.5 bg-foreground text-background text-[10px] font-black uppercase tracking-widest rounded-lg opacity-0 pointer-events-none group-hover/tooltip:opacity-100 group-hover/tooltip:-translate-y-1 translate-y-1 transition-all duration-200 whitespace-nowrap z-50 shadow-xl"
+                      >
+                        Download
+                        <div
+                          class="absolute top-full left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-foreground rotate-45"
+                        ></div>
+                      </div>
+                    </div>
+
+                    <div class="relative group/tooltip">
+                      <button
+                        onclick={() => handleDelete(rpt)}
+                        class="p-2.5 hover:bg-rose-500/10 hover:text-rose-500 rounded-xl transition-all text-muted-foreground"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                      <!-- Tooltip -->
+                      <div
+                        class="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 px-3 py-1.5 bg-foreground text-background text-[10px] font-black uppercase tracking-widest rounded-lg opacity-0 pointer-events-none group-hover/tooltip:opacity-100 group-hover/tooltip:-translate-y-1 translate-y-1 transition-all duration-200 whitespace-nowrap z-50 shadow-xl"
+                      >
+                        Hapus
+                        <div
+                          class="absolute top-full left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-foreground rotate-45"
+                        ></div>
+                      </div>
+                    </div>
                   </div>
                 </td>
               </tr>
@@ -844,19 +877,3 @@
     >
   </div>
 {/if}
-
-<style>
-  .custom-scrollbar::-webkit-scrollbar {
-    width: 6px;
-  }
-  .custom-scrollbar::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: hsl(var(--muted-foreground) / 0.2);
-    border-radius: 10px;
-  }
-  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: hsl(var(--emerald-500) / 0.4);
-  }
-</style>

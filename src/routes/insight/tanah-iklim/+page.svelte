@@ -19,8 +19,15 @@
     Lightbulb,
     ChevronRight,
     ChevronDown,
+    Box,
+    Shapes,
     Activity,
     Compass,
+    Microscope,
+    Leaf,
+    CircleDotDashed,
+    Shuffle,
+    GitCompareArrows,
   } from "@lucide/svelte";
 
   import { getDemoplotList } from "$lib/services/demoplot";
@@ -377,7 +384,7 @@
           <div
             class="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500"
           >
-            <FlaskConical size={24} />
+            <Microscope size={24} />
           </div>
           <div>
             <h2
@@ -399,7 +406,7 @@
             <div
               class="absolute -right-4 -bottom-4 text-emerald-500/5 group-hover:text-emerald-500/10 transition-colors"
             >
-              <Thermometer size={140} strokeWidth={1} />
+              <FlaskConical size={140} strokeWidth={1} />
             </div>
             <p
               class="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2"
@@ -426,7 +433,7 @@
             <div
               class="absolute -right-4 -bottom-4 text-blue-500/5 group-hover:text-blue-500/10 transition-colors"
             >
-              <Layers size={140} strokeWidth={1} />
+              <Leaf size={140} strokeWidth={1} />
             </div>
             <p
               class="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2"
@@ -453,7 +460,7 @@
             <div
               class="absolute -right-4 -bottom-4 text-amber-500/5 group-hover:text-amber-500/10 transition-colors"
             >
-              <Sun size={140} strokeWidth={1} />
+              <CircleDotDashed size={140} strokeWidth={1} />
             </div>
             <p
               class="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2"
@@ -480,7 +487,7 @@
             <div
               class="absolute -right-4 -bottom-4 text-indigo-500/5 group-hover:text-indigo-500/10 transition-colors"
             >
-              <Info size={140} strokeWidth={1} />
+              <Shapes size={140} strokeWidth={1} />
             </div>
             <p
               class="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2"
@@ -533,7 +540,7 @@
             <div
               class="absolute -right-4 -bottom-4 text-fuchsia-500/5 group-hover:text-fuchsia-500/10 transition-colors"
             >
-              <Activity size={140} strokeWidth={1} />
+              <GitCompareArrows size={140} strokeWidth={1} />
             </div>
             <p
               class="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2"
@@ -569,7 +576,7 @@
             <div
               class="absolute -right-4 -bottom-4 text-slate-500/5 group-hover:text-slate-500/10 transition-colors"
             >
-              <Compass size={140} strokeWidth={1} />
+              <Box size={140} strokeWidth={1} />
             </div>
             <p
               class="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2"

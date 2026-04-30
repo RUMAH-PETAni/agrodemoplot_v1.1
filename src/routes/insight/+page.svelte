@@ -54,34 +54,15 @@
       active: true,
       href: "/insight/tanah-iklim",
     },
-    {
-      name: "Kesesuaian Lahan",
-      desc: "Analisis kesesuaian lahan berdasarkan data geospasial.",
-      icon: Map,
-      img: menu1Img,
-      active: false,
-    },
+
     {
       name: "Rekomendasi Teknis",
-      desc: "Saran praktik budidaya terbaik dari ahli agronomis.",
+      desc: "Saran praktik budidaya terbaik dari ahli agronomis/akademisi.",
       icon: Lightbulb,
       img: menu3Img,
       active: false,
     },
-    {
-      name: "Produktivitas",
-      desc: "Analisis produktivitas lahan dan pengelolaan.",
-      icon: Lightbulb,
-      img: menu6Img,
-      active: false,
-    },
-    {
-      name: "Jejak Karbon",
-      desc: "Hitung emisi karbon pada lahan berdasarkan aktivitas kebun.",
-      icon: Footprints,
-      img: menu4Img,
-      active: false,
-    },
+
     {
       name: "Modul Edukasi",
       desc: "Materi sekolah lapangan & pelatihan pertanian berkelanjutan.",

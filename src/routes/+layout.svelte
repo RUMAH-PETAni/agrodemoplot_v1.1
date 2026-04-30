@@ -10,6 +10,7 @@
   import { X } from '@lucide/svelte';
   import { fade, fly } from 'svelte/transition';
   import { backOut } from 'svelte/easing';
+  import { auth } from '$lib/supabase/auth';
 
   let mobileMode = $state(false);
   let sidebarOpen = $state(false);
@@ -26,6 +27,7 @@
 
 
   onMount(() => {
+    auth.init();
     const checkScreenSize = () => {
       mobileMode = window.innerWidth < 768;
     };

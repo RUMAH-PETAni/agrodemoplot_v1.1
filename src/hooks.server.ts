@@ -1,11 +1,6 @@
 import type { Handle } from '@sveltejs/kit';
 import { supabase } from '$lib/supabase/client';
 
-// Define a type for our session
-interface AppSession {
-  session: any; // You can be more specific with the type if needed
-}
-
 export const handle: Handle = async ({ event, resolve }) => {
   // Get session from Supabase
   const { data: { session } } = await supabase.auth.getSession();

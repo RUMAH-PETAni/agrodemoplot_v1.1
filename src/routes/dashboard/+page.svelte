@@ -50,14 +50,15 @@
   async function loadSummaryData() {
     statsLoading = true;
     try {
-      const [petani, demoplots, monitoring, hpg, logs] = await Promise.all([
-        getPetaniList(),
-        getDemoplotList(),
-        getMonitoringPenanaman(),
-        getMonitoringHPG(),
-        getLogAktifitas(),
-        getProduktivitas(),
-      ]);
+      const [petani, demoplots, monitoring, hpg, logs, productivity] =
+        await Promise.all([
+          getPetaniList(),
+          getDemoplotList(),
+          getMonitoringPenanaman(),
+          getMonitoringHPG(),
+          getLogAktifitas(),
+          getProduktivitas(),
+        ]);
       totalPetani = petani.length;
       totalLahan = demoplots.length;
 
@@ -276,7 +277,7 @@
           </div>
 
           <!-- Stat 4: HPG -->
-           <div
+          <div
             class="group relative p-6 bg-white/10 border border-white/10 rounded-[2.5rem] hover:bg-white/20 hover:-translate-y-1 hover:shadow-2xl hover:border-white/20 transition-all duration-300 overflow-hidden active:scale-95"
           >
             <div
@@ -295,10 +296,9 @@
               <p class="text-2xl font-black">{totalHpg}</p>
             {/if}
           </div>
-          
 
           <!-- Stat 5: Aktivitas -->
-           <div
+          <div
             class="group relative p-6 bg-white/10 border border-white/10 rounded-[2.5rem] hover:bg-white/20 hover:-translate-y-1 hover:shadow-2xl hover:border-white/20 transition-all duration-300 overflow-hidden active:scale-95"
           >
             <div
@@ -317,7 +317,6 @@
               <p class="text-2xl font-black">{totalAktifitas}</p>
             {/if}
           </div>
-          
 
           <!-- Stat 6: Produktivitas -->
           <div

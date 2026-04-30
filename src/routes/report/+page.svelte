@@ -595,37 +595,30 @@
 
 <!-- Report Generator Drawer -->
 {#if showGenerator}
-  <div class="fixed inset-0 z-[2000] flex justify-end">
-    <!-- svelte-ignore a11y_click_events_have_key_events -->
-    <!-- svelte-ignore a11y_no_static_element_interactions -->
+  <div
+    class="fixed inset-0 bg-black/20 backdrop-blur-sm z-[2000] flex justify-end"
+    onclick={() => !generating && (showGenerator = false)}
+    transition:fade
+  >
     <div
-      class="absolute inset-0 bg-slate-950/60 backdrop-blur-md"
-      onclick={() => !generating && (showGenerator = false)}
-      transition:fade
-    ></div>
-
-    <div
-      class="relative w-full max-w-xl bg-background shadow-2xl h-full flex flex-col border-l border-border"
-      transition:fly={{ x: 600, duration: 600, easing: backOut }}
+      class="h-full w-full max-w-2xl bg-card border-l border-border shadow-[-20px_0_50px_-20px_rgba(0,0,0,0.3)] overflow-hidden flex flex-col"
+      in:fly={{ x: 600, duration: 500, easing: backOut }}
+      out:fly={{ x: 600, duration: 400 }}
+      onclick={(e) => e.stopPropagation()}
     >
       <!-- Header -->
       <div
-        class="p-8 border-b border-border flex items-center justify-between bg-card/50"
+        class="p-8 h-20 border-b border-border flex items-center justify-between bg-muted/30"
       >
         <div class="space-y-1">
           <h2 class="text-2xl font-black tracking-tight uppercase leading-none">
             Konfigurasi Laporan
           </h2>
-          <p
-            class="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]"
-          >
-            Kustomisasi Parameter Data
-          </p>
         </div>
         <button
           onclick={() => (showGenerator = false)}
           disabled={generating}
-          class="p-3 hover:bg-muted rounded-2xl transition-all active:scale-90"
+          class="p-3 bg-white border border-border rounded-2xl hover:bg-red-50 hover:text-red-500 transition-all"
         >
           <X size={24} />
         </button>
@@ -761,16 +754,18 @@
       </div>
 
       <!-- Footer -->
-      <div class="p-8 border-t border-border bg-card/50">
+      <div
+        class="p-8 h-20 bg-muted/30 border-t border-border flex items-center justify-end gap-3"
+      >
         <button
           onclick={handleGenerate}
           disabled={generating}
-          class="w-full h-16 bg-emerald-600 hover:bg-emerald-700 disabled:bg-muted text-white font-black uppercase tracking-[0.3em] text-xs rounded-2xl transition-all shadow-xl shadow-emerald-600/20 active:scale-95 flex items-center justify-center gap-4"
+          class="p-3 bg-emerald-600 text-white font-black uppercase tracking-widest text-[10px] rounded-xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-600/20 text-white"
         >
           {#if generating}
-            <Loader2 size={24} class="animate-spin" /> Sedang Mengolah Data...
+            Sedang Mengolah Data...
           {:else}
-            <Printer size={20} /> Generate Dokumen
+            Generate Dokumen
           {/if}
         </button>
       </div>

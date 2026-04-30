@@ -270,19 +270,266 @@ export const POST: RequestHandler = async ({ request }) => {
       await doc.table(table, { ...tableOptions } as any);
     };
 
+    const toMercator = (lng: number, lat: number) => {
+      const r = 6378137;
+      const x = lng * Math.PI / 180 * r;
+      const y = Math.log(Math.tan((90 + lat) * Math.PI / 360)) * r;
+      return [x, y];
+    };
+
+    const invMercator = (x: number, y: number) => {
+      const r = 6378137;
+      const lng = x / r * 180 / Math.PI;
+      const lat = (2 * Math.atan(Math.exp(y / r)) - Math.PI / 2) * 180 / Math.PI;
+      return [lng, lat];
+    };
+
+    const addMapSection = async (letter: string) => {
+      addSectionTitle(`${letter}. LOKASI & PEMETAAN`);
+      for (const d of demoplotData) {
+        try {
+          let hasPolygon = false;
+          let coords: [number, number][] = [];
+          let droneUrl = d.foto_udara;
+          let isTile = droneUrl?.includes('{z}');
+
+          if (d.polygon) {
+            try {
+              const geojson = typeof d.polygon === 'string' ? JSON.parse(d.polygon) : d.polygon;
+              let rawCoords = geojson.type === 'FeatureCollection' ? geojson.features[0]?.geometry?.coordinates[0] : 
+                              (geojson.type === 'Feature' ? geojson.geometry?.coordinates[0] : geojson.coordinates?.[0]);
+              if (rawCoords?.length > 2) {
+                coords = rawCoords.map((c: any) => [c[0], c[1]]);
+                hasPolygon = true;
+              }
+            } catch (e) { }
+          }
+
+          let mXmin, mYmin, mXmax, mYmax;
+          let dXmin: number, dXmax: number, dYmin: number, dYmax: number;
+
+          if (isTile && d.latitude && d.longitude) {
+            const z = 19; const n = Math.pow(2, z);
+            const tx = Math.floor((d.longitude + 180) / 360 * n);
+            const ty = Math.floor((1 - Math.log(Math.tan(d.latitude * Math.PI / 180) + 1 / Math.cos(d.latitude * Math.PI / 180)) / Math.PI) / 2 * n);
+            droneUrl = droneUrl!.replace('{z}', z.toString()).replace('{x}', tx.toString()).replace('{y}', ty.toString());
+            const [x0, y0] = toMercator(tx/n*360-180, Math.atan(Math.sinh(Math.PI*(1-2*(ty+1)/n)))*180/Math.PI);
+            const [x1, y1] = toMercator((tx+1)/n*360-180, Math.atan(Math.sinh(Math.PI*(1-2*ty/n)))*180/Math.PI);
+            mXmin = x0; mXmax = x1; mYmin = y0; mYmax = y1;
+            dXmin = x0; dXmax = x1; dYmin = y0; dYmax = y1;
+          } else if (hasPolygon) {
+            const mCoords = coords.map(c => toMercator(c[0], c[1]));
+            mXmin = Math.min(...mCoords.map(c => c[0])); mXmax = Math.max(...mCoords.map(c => c[0]));
+            mYmin = Math.min(...mCoords.map(c => c[1])); mYmax = Math.max(...mCoords.map(c => c[1]));
+            dXmin = mXmin; dXmax = mXmax; dYmin = mYmin; dYmax = mYmax;
+          } else if (d.latitude && d.longitude) {
+            const [cx, cy] = toMercator(d.longitude, d.latitude);
+            mXmin = cx - 100; mXmax = cx + 100; mYmin = cy - 100; mYmax = cy + 100;
+            dXmin = mXmin; dXmax = mXmax; dYmin = mYmin; dYmax = mYmax;
+          } else {
+            doc.fillColor(colors.muted).fontSize(10).text(`(Peta tidak tersedia: Koordinat belum diatur)`, { oblique: true } as any);
+            doc.moveDown(2);
+            continue;
+          }
+
+          // Fine-tune for even tighter zoom (20% padding)
+          const minSpread = 180; 
+          if (mXmax - mXmin < minSpread) { const d = (minSpread - (mXmax - mXmin)) / 2; mXmin -= d; mXmax += d; }
+          if (mYmax - mYmin < minSpread) { const d = (minSpread - (mYmax - mYmin)) / 2; mYmin -= d; mYmax += d; }
+          
+          const pad = (mXmax - mXmin) * 0.20; 
+          mXmin -= pad; mXmax += pad; mYmin -= pad; mYmax += pad;
+
+          const targetRatio = 800 / 400;
+          let mW = mXmax - mXmin; let mH = mYmax - mYmin;
+          if (mW / mH > targetRatio) { const th = mW / targetRatio; mYmin -= (th - mH) / 2; mYmax += (th - mH) / 2; }
+          else { const tw = mH * targetRatio; mXmin -= (tw - mW) / 2; mXmax += (tw - mW) / 2; }
+
+          const [lonMin, latMin] = invMercator(mXmin, mYmin);
+          const [lonMax, latMax] = invMercator(mXmax, mYmax);
+
+          const [dLonMin, dLatMin] = invMercator(dXmin!, dYmin!);
+          const [dLonMax, dLatMax] = invMercator(dXmax!, dYmax!);
+
+          let esriBuffer: Buffer | null = null;
+          let finalProvider = 'Esri World Imagery';
+          const eps = [`https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/export`, `https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/export` ];
+
+          for (const ep of eps) {
+            try {
+              const url = `${ep}?bbox=${mXmin},${mYmin},${mXmax},${mYmax}&bboxSR=3857&imageSR=3857&size=800,400&f=image&format=jpg`;
+              const res = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0' } });
+              if (res.ok) { esriBuffer = Buffer.from(await res.arrayBuffer()); if (esriBuffer.length > 1000) break; }
+            } catch (e) { }
+          }
+
+          // Add safety margin before map
+          if (!esriBuffer) {
+            try {
+              // Pre-calculate CartoDB range
+              const z = 17; const n = Math.pow(2, z);
+              const tx0 = Math.floor((lonMin + 180) / 360 * n);
+              const tx1 = Math.floor((lonMax + 180) / 360 * n);
+              const ty0 = Math.floor((1 - Math.log(Math.tan(latMax * Math.PI / 180) + 1 / Math.cos(latMax * Math.PI / 180)) / Math.PI) / 2 * n);
+              const ty1 = Math.floor((1 - Math.log(Math.tan(latMin * Math.PI / 180) + 1 / Math.cos(latMin * Math.PI / 180)) / Math.PI) / 2 * n);
+              
+              // We'll draw OSM tiles later inside the final drawing block
+              finalProvider = 'CartoDB Voyager (OSM)';
+            } catch (e) { }
+          }
+
+          let droneTiles: { buf: Buffer, x0: number, y0: number, x1: number, y1: number }[] = [];
+          let droneBuffer: Buffer | null = null;
+          let droneProvider = '';
+
+          if (droneUrl) {
+            try {
+              if (isTile) {
+                let z = 19;
+                const getTiles = (zz: number) => {
+                  const n = Math.pow(2, zz);
+                  const tx0 = Math.floor((dLonMin + 180) / 360 * n) - 1;
+                  const tx1 = Math.floor((dLonMax + 180) / 360 * n) + 1;
+                  const ty0 = Math.floor((1 - Math.log(Math.tan(dLatMax * Math.PI / 180) + 1 / Math.cos(dLatMax * Math.PI / 180)) / Math.PI) / 2 * n) - 1;
+                  const ty1 = Math.floor((1 - Math.log(Math.tan(dLatMin * Math.PI / 180) + 1 / Math.cos(dLatMin * Math.PI / 180)) / Math.PI) / 2 * n) + 1;
+                  return { tx0, tx1, ty0, ty1 };
+                };
+                let t = getTiles(z);
+                if ((t.tx1 - t.tx0 + 1) * (t.ty1 - t.ty0 + 1) > 16) { z = 18; t = getTiles(z); }
+
+                for (let tx = t.tx0; tx <= t.tx1; tx++) {
+                  for (let ty = t.ty0; ty <= t.ty1; ty++) {
+                    try {
+                      const tUrl = d.foto_udara!.replace('{z}', z.toString()).replace('{x}', tx.toString()).replace('{y}', ty.toString());
+                      const tRes = await fetch(tUrl, { headers: { 'User-Agent': 'Mozilla/5.0' } });
+                      if (tRes.ok) {
+                        const tBuf = Buffer.from(await tRes.arrayBuffer());
+                        const n = Math.pow(2, z);
+                        const [x0, y0] = toMercator(tx / n * 360 - 180, Math.atan(Math.sinh(Math.PI * (1 - 2 * (ty + 1) / n))) * 180 / Math.PI);
+                        const [x1, y1] = toMercator((tx + 1) / n * 360 - 180, Math.atan(Math.sinh(Math.PI * (1 - 2 * ty / n))) * 180 / Math.PI);
+                        droneTiles.push({ buf: tBuf, x0, y0, x1, y1 });
+                      }
+                    } catch (e) {}
+                  }
+                }
+                if (droneTiles.length > 0) droneProvider = ' + Foto Udara';
+              } else {
+                const dr = await fetch(droneUrl, { headers: { 'User-Agent': 'Mozilla/5.0' } });
+                if (dr.ok) {
+                  droneBuffer = Buffer.from(await dr.arrayBuffer());
+                  droneProvider = ' + Foto Udara';
+                }
+              }
+            } catch (e) { }
+          }
+
+          if (esriBuffer || finalProvider.includes('CartoDB')) {
+            // Write metadata BEFORE the map
+            doc.fontSize(9).fillColor(colors.text).text(`Koordinat: ${d.latitude?.toFixed(6)}, ${d.longitude?.toFixed(6)} | Elevasi: ${d.altitude || '-'} m dpl`, { align: 'center' });
+            doc.fontSize(8).fillColor(colors.muted).text(`Sumber: ${finalProvider}${droneProvider} | Plot: ${d.nama_demoplot}`, { align: 'center' });
+            doc.moveDown(0.8);
+
+            const startY = doc.y;
+            const pdfW = 480; const pdfH = 240;
+            const startX = (doc.page.width - pdfW) / 2;
+
+            // 2. Draw Background
+            if (esriBuffer && finalProvider !== 'CartoDB Voyager (OSM)') {
+              doc.image(esriBuffer, startX, startY, { width: pdfW, height: pdfH });
+            } else {
+              // Draw CartoDB tiles
+              const z = 17; const n = Math.pow(2, z);
+              const tx0 = Math.floor((lonMin + 180) / 360 * n);
+              const tx1 = Math.floor((lonMax + 180) / 360 * n);
+              const ty0 = Math.floor((1 - Math.log(Math.tan(latMax * Math.PI / 180) + 1 / Math.cos(latMax * Math.PI / 180)) / Math.PI) / 2 * n);
+              const ty1 = Math.floor((1 - Math.log(Math.tan(latMin * Math.PI / 180) + 1 / Math.cos(latMin * Math.PI / 180)) / Math.PI) / 2 * n);
+              for (let tx = tx0; tx <= tx1; tx++) {
+                for (let ty = ty0; ty <= ty1; ty++) {
+                  try {
+                    const osmUrl = `https://basemaps.cartocdn.com/rastertiles/voyager/${z}/${tx}/${ty}.png`;
+                    const oRes = await fetch(osmUrl, { headers: { 'User-Agent': 'Agrodemoplot-Reporting-System/1.1' } });
+                    if (oRes.ok) {
+                      const oBuf = Buffer.from(await oRes.arrayBuffer());
+                      const [x0, y0] = toMercator(tx / n * 360 - 180, Math.atan(Math.sinh(Math.PI * (1 - 2 * (ty + 1) / n))) * 180 / Math.PI);
+                      const [x1, y1] = toMercator((tx + 1) / n * 360 - 180, Math.atan(Math.sinh(Math.PI * (1 - 2 * ty / n))) * 180 / Math.PI);
+                      const ix = ((x0 - mXmin) / (mXmax - mXmin)) * pdfW;
+                      const iy = (1 - (y1 - mYmin) / (mYmax - mYmin)) * pdfH;
+                      const iw = ((x1 - x0) / (mXmax - mXmin)) * pdfW;
+                      const ih = ((y1 - y0) / (mYmax - mYmin)) * pdfH;
+                      doc.image(oBuf, startX + ix, startY + iy, { width: iw + 0.3, height: ih + 0.3 });
+                    }
+                  } catch (e) {}
+                }
+              }
+            }
+
+            // 3. Draw Drone Overlay
+            if (droneTiles.length > 0 || droneBuffer) {
+              doc.save().opacity(0.95).translate(startX, startY);
+              if (droneTiles.length > 0) {
+                for (const t of droneTiles) {
+                  const ix = ((t.x0 - mXmin) / (mXmax - mXmin)) * pdfW;
+                  const iy = (1 - (t.y1 - mYmin) / (mYmax - mYmin)) * pdfH;
+                  const iw = ((t.x1 - t.x0) / (mXmax - mXmin)) * pdfW;
+                  const ih = ((t.y1 - t.y0) / (mYmax - mYmin)) * pdfH;
+                  doc.image(t.buf, ix, iy, { width: iw + 0.3, height: ih + 0.3 });
+                }
+              } else if (droneBuffer) {
+                const ix = ((dXmin! - mXmin) / (mXmax - mXmin)) * pdfW;
+                const iy = (1 - (dYmax! - mYmin) / (mYmax - mYmin)) * pdfH;
+                const iw = ((dXmax! - dXmin!) / (mXmax - mXmin)) * pdfW;
+                const ih = ((dYmax! - dYmin!) / (mYmax - mYmin)) * pdfH;
+                doc.image(droneBuffer, ix, iy, { width: iw, height: ih });
+              }
+              doc.restore();
+            }
+
+            // 4. Draw Polygons/Markers
+            if (hasPolygon) {
+              doc.save().translate(startX, startY);
+              doc.lineWidth(2).strokeColor('#10b981').fillColor('#10b981').opacity(0.4);
+              coords.forEach((c, i) => {
+                const [mx, my] = toMercator(c[0], c[1]);
+                const px = ((mx - mXmin) / (mXmax - mXmin)) * pdfW;
+                const py = (1 - (my - mYmin) / (mYmax - mYmin)) * pdfH;
+                if (i === 0) doc.moveTo(px, py); else doc.lineTo(px, py);
+              });
+              doc.closePath().fillAndStroke();
+              doc.restore();
+            } else if (d.latitude && d.longitude) {
+              doc.save().translate(startX, startY);
+              const [mx, my] = toMercator(d.longitude, d.latitude);
+              const px = ((mx - mXmin) / (mXmax - mXmin)) * pdfW;
+              const py = (1 - (my - mYmin) / (mYmax - mYmin)) * pdfH;
+              doc.circle(px, py, 6).fillColor('#ef4444').fill();
+              doc.restore();
+            }
+
+            doc.y = startY + pdfH;
+            doc.moveDown(2);
+          } else {
+            doc.fillColor('#ef4444').fontSize(10).text(`(Gagal memuat peta: Layanan satelit tidak merespon)`);
+            doc.moveDown(2);
+          }
+        } catch (err) { console.error('Map error:', err); }
+      }
+    };
+
     // ── TEMPLATE ROUTING ────────────────────────────────────────
 
     if (template === 'Ringkasan Eksekutif') {
       await addFarmerSection('A');
       await addDemoplotSection('B');
-      await addSoilClimateSection('C');
-      await addVegetationSection('D');
-      await addHpgSection('E');
-      await addActivitySection('F');
-      await addProductivitySection('G');
+      await addMapSection('C');
+      await addSoilClimateSection('D');
+      await addVegetationSection('E');
+      await addHpgSection('F');
+      await addActivitySection('G');
+      await addProductivitySection('H');
     } else if (template === 'Profil & Demoplot') {
       await addFarmerSection('1');
       await addDemoplotSection('2');
+      await addMapSection('3');
     } else if (template === 'Analisis Profitabilitas') {
       await addProductivitySection('1');
     } else if (template === 'Monitoring HPG') {
@@ -296,7 +543,7 @@ export const POST: RequestHandler = async ({ request }) => {
     }
 
     // Footer
-    doc.moveDown(3);
+    doc.moveDown(5);
     doc.fillColor(colors.muted).fontSize(10).text(
       `Laporan ini dibuat secara otomatis pada ${new Date().toLocaleString('id-ID')} WIB.\nDokumen ini merupakan arsip resmi Sistem Monitoring AgroDemoplot.`,
       { align: 'center' }

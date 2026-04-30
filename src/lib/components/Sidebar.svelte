@@ -21,6 +21,10 @@
   import { fade, fly, scale } from "svelte/transition";
   import { spring } from "svelte/motion";
 
+  import { auth } from "$lib/supabase/auth";
+  import { onMount } from "svelte";
+  import type { User } from "@supabase/supabase-js";
+
   interface Props {
     mobileMode: boolean;
     sidebarOpen?: boolean;
@@ -35,15 +39,22 @@
     onAIAction,
   }: Props = $props();
 
-  const menuItems = [
+  let user = $state<User | null>(null);
+
+  onMount(() => {
+    const unsub = auth.subscribe((state) => {
+      user = state.user;
+    });
+    return unsub;
+  });
+
+  const menuItems = $derived([
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-
     { name: "Peta", href: "/map", icon: Map },
-
     { name: "Analitik", href: "/insight", icon: Lightbulb },
     { name: "Laporan", href: "/report", icon: FileText },
     { name: "AI-Gronomis", href: "#", icon: BotMessageSquare, type: "action" },
-  ];
+  ]);
 
   let currentPath = $derived($page.url.pathname);
 </script>

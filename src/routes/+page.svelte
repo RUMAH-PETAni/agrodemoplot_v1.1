@@ -264,11 +264,11 @@
               <h1
                 class="text-5xl md:text-6xl font-black text-foreground leading-[0.95] tracking-tighter"
               >
-                Dari Lahan Pertanian <br />
                 <span
                   class="bg-gradient-to-r from-emerald-600 to-emerald-400 bg-clip-text text-transparent"
-                  >Ke Ekosistem Digital</span
+                  >Dari Lahan Pertanian <br /></span
                 >
+                Ke Ekosistem Digital
               </h1>
               <p
                 class="text-base text-muted-foreground leading-relaxed font-medium max-w-md"
@@ -296,12 +296,6 @@
                 >
                   Mulai Sekarang
                 </a>
-                <a
-                  href="/faq"
-                  class="text-foreground font-black uppercase tracking-widest text-sm py-4 px-6 rounded-2xl hover:bg-muted border border-border transition-all"
-                >
-                  F.A.Q
-                </a>
               {/if}
             </div>
 
@@ -309,19 +303,24 @@
             <div class="flex items-center gap-6 opacity-30 mt-16">
               <a
                 href="/legal/privacy-policy"
-                class="text-xs font-black uppercase tracking-[0.2em] hover:text-emerald-600 hover:opacity-100 transition-all"
+                class="text-[10px] font-black uppercase tracking-[0.2em] hover:text-emerald-600 hover:opacity-100 transition-all"
                 >Kebijakan Privasi</a
               >
               <a
                 href="/legal/terms-of-service"
-                class="text-xs font-black uppercase tracking-[0.2em] hover:text-emerald-600 hover:opacity-100 transition-all"
+                class="text-[10px] font-black uppercase tracking-[0.2em] hover:text-emerald-600 hover:opacity-100 transition-all"
                 >Ketentuan Layanan</a
+              >
+              <a
+                href="/faq"
+                class="text-[10px] font-black uppercase tracking-[0.2em] hover:text-emerald-600 hover:opacity-100 transition-all"
+                >F.A.Q</a
               >
             </div>
 
             <!-- Copyright & Version -->
             <div
-              class="text-xs font-black uppercase tracking-[0.3em] text-muted-foreground"
+              class="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground"
             >
               &copy; {new Date().getFullYear()} | Web App Versi 1.1
             </div>

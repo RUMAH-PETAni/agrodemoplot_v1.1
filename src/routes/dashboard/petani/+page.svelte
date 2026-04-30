@@ -1080,7 +1080,7 @@
       </div>
 
       <div
-        class="p-8 h-20 bg-muted/30 border-t border-border flex flex items-center justify-end gap-3"
+        class="p-8 h-20 bg-muted/30 border-t border-border flex items-center justify-end gap-3"
       >
         <button
           onclick={closeModal}

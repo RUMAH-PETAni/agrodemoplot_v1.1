@@ -36,6 +36,7 @@
     AlertTriangle,
     Info,
     CheckCircle2,
+    User,
     ChevronLeft,
     ChevronRight,
     Map as MapIcon,
@@ -1470,49 +1471,116 @@
               </p>
             </div>
 
-            <div class="space-y-4">
-              <h4
-                class="text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-border pb-2"
-              >
-                Lokasi & Konteks
-              </h4>
-              <div class="flex items-center gap-6">
-                <div class="flex items-center gap-3">
+            <!-- Farmer & Plot Details -->
+            <div class="pt-8 border-t border-border/50">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Farmer -->
+                <div
+                  class="flex items-center gap-6 p-8 bg-emerald-500/5 rounded-3xl border border-emerald-500/10"
+                >
                   <div
-                    class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600"
+                    class="w-14 h-14 bg-white rounded-2xl flex items-center justify-center shadow-sm shrink-0 border border-border overflow-hidden"
                   >
-                    <LandPlot size={18} />
+                    {#if selectedRecord.demoplot?.petani?.foto_profil}
+                      <img
+                        src={selectedRecord.demoplot.petani.foto_profil}
+                        alt=""
+                        class="w-full h-full object-cover"
+                      />
+                    {:else}
+                      <User size={24} class="text-emerald-400" />
+                    {/if}
                   </div>
                   <div>
-                    <p class="text-[9px] font-black text-slate-400 uppercase">
-                      Demoplot
+                    <p
+                      class="text-[9px] font-black text-emerald-600 uppercase tracking-widest mb-1"
+                    >
+                      Petani Pengelola
                     </p>
-                    <p class="text-sm font-bold">
-                      {selectedRecord.demoplot?.nama_demoplot}
+                    <h4 class="font-black text-lg text-foreground leading-none">
+                      {selectedRecord.demoplot?.petani?.nama_lengkap || "-"}
+                    </h4>
+                  </div>
+                </div>
+
+                <!-- Plot -->
+                <div
+                  class="flex items-center gap-6 p-8 bg-muted/30 rounded-3xl border border-border/50"
+                >
+                  <div
+                    class="w-14 h-14 bg-white rounded-2xl flex items-center justify-center border border-border shadow-sm shrink-0"
+                  >
+                    <LandPlot size={24} class="text-emerald-600" />
+                  </div>
+                  <div>
+                    <p
+                      class="text-[9px] font-black text-muted-foreground uppercase tracking-widest mb-1"
+                    >
+                      Lokasi Demoplot
+                    </p>
+                    <h4 class="font-black text-lg text-foreground leading-none">
+                      {selectedRecord.demoplot?.nama_demoplot || "-"}
+                    </h4>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Geospatial Data -->
+            {#if selectedRecord.latitude}
+              <div class="pt-8 border-t border-border/50 space-y-4">
+                <div class="flex items-center gap-3">
+                  <div
+                    class="w-8 h-8 bg-blue-500/10 text-blue-600 rounded-lg flex items-center justify-center"
+                  >
+                    <MapPin size={16} />
+                  </div>
+                  <h3
+                    class="text-sm font-black uppercase tracking-[0.2em] text-blue-600"
+                  >
+                    Geo-Tagging
+                  </h3>
+                </div>
+                <div class="grid grid-cols-3 gap-4">
+                  <div
+                    class="p-4 bg-muted/30 rounded-2xl border border-border/50"
+                  >
+                    <p
+                      class="text-[8px] font-black text-muted-foreground uppercase mb-1"
+                    >
+                      Latitude
+                    </p>
+                    <p class="text-xs font-bold">
+                      {selectedRecord.latitude.toFixed(6)}
+                    </p>
+                  </div>
+                  <div
+                    class="p-4 bg-muted/30 rounded-2xl border border-border/50"
+                  >
+                    <p
+                      class="text-[8px] font-black text-muted-foreground uppercase mb-1"
+                    >
+                      Longitude
+                    </p>
+                    <p class="text-xs font-bold">
+                      {selectedRecord.longitude?.toFixed(6) || "-"}
+                    </p>
+                  </div>
+                  <div
+                    class="p-4 bg-muted/30 rounded-2xl border border-border/50"
+                  >
+                    <p
+                      class="text-[8px] font-black text-muted-foreground uppercase mb-1"
+                    >
+                      Altitude
+                    </p>
+                    <p class="text-xs font-bold">
+                      {selectedRecord.altitude?.toFixed(1) || "0"} m
                     </p>
                   </div>
                 </div>
-                {#if selectedRecord.latitude}
-                  <div class="flex items-center gap-3">
-                    <div
-                      class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600"
-                    >
-                      <MapPin size={18} />
-                    </div>
-                    <div>
-                      <p class="text-[9px] font-black text-slate-400 uppercase">
-                        Koordinat
-                      </p>
-                      <p class="text-sm font-bold italic">
-                        {selectedRecord.latitude.toFixed(6)}, {selectedRecord.longitude?.toFixed(
-                          6,
-                        )}
-                      </p>
-                    </div>
-                  </div>
-                {/if}
               </div>
-            </div>
+            {/if}
 
             <div class="space-y-3">
               <h4

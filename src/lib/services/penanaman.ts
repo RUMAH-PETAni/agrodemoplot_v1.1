@@ -8,13 +8,15 @@ export interface MonitoringPenanaman {
   periode_monitoring: 'P1' | 'P2' | 'P3' | null;
   tanggal_monitoring: string;
   waktu_tanam: string | null;
-  jarak_tanam: '2,5x2,5' | '3x3' | '5x5' | '10x10' | 'tidak ada' | null;
+  jarak_tanam: string | null;
+  kategori_tanaman: 'tanaman utama' | 'pohon penaung' | 'tanaman lainnya' | null;
   jenis_tanaman: string | null;
   nama_ilmiah: string | null;
-  sumber_bibit: 'bibit sertifikat' | 'non sertifikat' | null;
+  sumber_bibit: 'bibit sertifikat' | 'non sertifikat' | 'lainnya' | null;
   usia_tanaman: number | null;
   kondisi_pertumbuhan: 'sehat' | 'tidak sehat' | 'mati' | null;
   tinggi: number | null;
+  dbh: number | null;
   latitude: number | null;
   longitude: number | null;
   altitude: number | null;
@@ -95,18 +97,21 @@ export const deleteMonitoringPenanaman = async (id: string) => {
 };
 
 export const uploadFotoTanaman = async (file: File, recordId: string) => {
-  const fileExt = file.name.split('.').pop();
-  const fileName = `tanaman/${recordId}-${Math.random()}.${fileExt}`;
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('recordId', recordId);
+  formData.append('folder', 'penanaman');
 
-  const { error: uploadError } = await supabase.storage
-    .from('foto_tanaman')
-    .upload(fileName, file);
+  const response = await fetch('/api/upload-cloudinary', {
+    method: 'POST',
+    body: formData,
+  });
 
-  if (uploadError) throw uploadError;
+  if (!response.ok) {
+    const err = await response.json();
+    throw new Error(err.error || 'Gagal mengupload foto ke Cloudinary');
+  }
 
-  const { data: { publicUrl } } = supabase.storage
-    .from('foto_tanaman')
-    .getPublicUrl(fileName);
-
-  return publicUrl;
+  const { secure_url } = await response.json();
+  return secure_url;
 };

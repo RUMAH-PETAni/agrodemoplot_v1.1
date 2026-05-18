@@ -61,6 +61,7 @@
   let searchQuery = $state("");
   let conditionFilter = $state("");
   let demoplotFilter = $state("");
+  let categoryFilter = $state("");
 
   let filteredRecords = $derived.by(() => {
     // Group by kode_tanaman and take the latest (first in sorted records)
@@ -83,7 +84,9 @@
       const matchCondition =
         !conditionFilter || r.kondisi_pertumbuhan === conditionFilter;
       const matchDemoplot = !demoplotFilter || r.demoplot_id === demoplotFilter;
-      return matchSearch && matchCondition && matchDemoplot;
+      const matchCategory =
+        !categoryFilter || r.kategori_tanaman === categoryFilter;
+      return matchSearch && matchCondition && matchDemoplot && matchCategory;
     });
   });
 
@@ -149,7 +152,9 @@
   let formPeriode = $state<MonitoringPenanaman["periode_monitoring"]>("P1");
 
   let formWaktuTanam = $state("");
-  let formJarakTanam = $state<MonitoringPenanaman["jarak_tanam"]>(null);
+  let formJarakTanam = $state("");
+  let formKategoriTanaman =
+    $state<MonitoringPenanaman["kategori_tanaman"]>(null);
   let formJenisTanaman = $state("");
   let formNamaIlmiah = $state("");
   let formSumberBibit =
@@ -158,6 +163,7 @@
   let formKondisi = $state<MonitoringPenanaman["kondisi_pertumbuhan"]>(null);
 
   let formTinggi = $state<number | "">("");
+  let formDbh = $state<number | "">("");
   let formCatatan = $state("");
   let formFoto = $state("");
   let formLatitude = $state<number | null>(null);
@@ -276,7 +282,8 @@
     formPeriode = "P1";
 
     formWaktuTanam = "";
-    formJarakTanam = null;
+    formJarakTanam = "";
+    formKategoriTanaman = null;
     formJenisTanaman = "";
     formNamaIlmiah = "";
 
@@ -285,6 +292,7 @@
     formKondisi = null;
 
     formTinggi = "";
+    formDbh = "";
     formCatatan = "";
     formFoto = "";
     formLatitude = null;
@@ -302,13 +310,15 @@
     formPeriode = record.periode_monitoring || "P1";
 
     formWaktuTanam = record.waktu_tanam || "";
-    formJarakTanam = record.jarak_tanam;
+    formJarakTanam = record.jarak_tanam || "";
+    formKategoriTanaman = record.kategori_tanaman;
     formJenisTanaman = record.jenis_tanaman || "";
     formNamaIlmiah = record.nama_ilmiah || "";
     formSumberBibit = record.sumber_bibit;
     formUsia = record.usia_tanaman || "";
     formKondisi = record.kondisi_pertumbuhan;
     formTinggi = record.tinggi || "";
+    formDbh = record.dbh || "";
     formCatatan = record.catatan || "";
     formFoto = record.foto_tanaman || "";
     formLatitude = record.latitude;
@@ -332,7 +342,8 @@
     else formPeriode = "P1"; // Should not happen with current logic
 
     formWaktuTanam = record.waktu_tanam || "";
-    formJarakTanam = record.jarak_tanam;
+    formJarakTanam = record.jarak_tanam || "";
+    formKategoriTanaman = record.kategori_tanaman;
     formJenisTanaman = record.jenis_tanaman || "";
     formNamaIlmiah = record.nama_ilmiah || "";
     formSumberBibit = record.sumber_bibit;
@@ -341,6 +352,7 @@
     formUsia = "";
     formKondisi = "sehat";
     formTinggi = "";
+    formDbh = "";
     formCatatan = "";
     formFoto = "";
     formLatitude = record.latitude;
@@ -360,8 +372,12 @@
       return;
     }
     if (formPeriode === "P1") {
-      if (!formJarakTanam) {
-        error = "Jarak Tanam wajib dipilih";
+      if (!formJarakTanam || !formJarakTanam.trim()) {
+        error = "Jarak Tanam wajib diisi";
+        return;
+      }
+      if (!formKategoriTanaman) {
+        error = "Kategori Tanaman wajib dipilih";
         return;
       }
     }
@@ -380,13 +396,15 @@
         periode_monitoring: formPeriode,
         waktu_tanam: formWaktuTanam || null,
 
-        jarak_tanam: formJarakTanam,
+        jarak_tanam: formJarakTanam || null,
+        kategori_tanaman: formKategoriTanaman,
         jenis_tanaman: formJenisTanaman,
         nama_ilmiah: formNamaIlmiah,
         sumber_bibit: formSumberBibit,
         usia_tanaman: formUsia === "" ? null : Number(formUsia),
         kondisi_pertumbuhan: formKondisi,
         tinggi: formTinggi === "" ? null : Number(formTinggi),
+        dbh: formPeriode === "P3" && formDbh !== "" ? Number(formDbh) : null,
         catatan: formCatatan,
         foto_tanaman: formFoto,
         latitude: formLatitude,
@@ -587,11 +605,19 @@
                  <div class="w-6 h-6 rounded-lg bg-muted flex items-center justify-center text-slate-400">
                     <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                  </div>
-                 <p class="text-[10px] font-bold text-slate-600">${r.demoplot?.nama_demoplot || "Plot Umum"}</p>
+                 <div class="flex flex-col">
+                   <p class="text-[10px] font-bold text-slate-600">${r.demoplot?.nama_demoplot || "Plot Umum"}</p>
+                   ${r.kategori_tanaman ? `<p class="text-[8px] font-black text-emerald-600 uppercase tracking-wider">${r.kategori_tanaman}</p>` : ""}
+                 </div>
               </div>
-              <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
-                <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">${r.tinggi || 0} cm</span>
-                <span class="px-2 py-0.5 ${getConditionColor(r.kondisi_pertumbuhan || "")} text-[8px] font-black text-white rounded-full uppercase tracking-tighter">${r.kondisi_pertumbuhan || "Normal"}</span>
+              <div class="pt-3 border-t border-slate-100 flex flex-col gap-1">
+                <div class="flex items-center justify-between">
+                  <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Tinggi: ${r.tinggi || 0} cm</span>
+                  ${r.dbh ? `<span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">DBH: ${r.dbh} cm</span>` : ""}
+                </div>
+                <div class="flex items-center justify-between mt-1">
+                  <span class="px-2 py-0.5 ${getConditionColor(r.kondisi_pertumbuhan || "")} text-[8px] font-black text-white rounded-full uppercase tracking-tighter">${r.kondisi_pertumbuhan || "Normal"}</span>
+                </div>
               </div>
             </div>
           `);
@@ -649,6 +675,7 @@
     searchQuery;
     conditionFilter;
     demoplotFilter;
+    categoryFilter;
     pageIndex = 0;
   });
 </script>
@@ -775,6 +802,15 @@
         <option value="sehat">SEHAT</option>
         <option value="tidak sehat">KURANG SEHAT</option>
         <option value="mati">MATI</option>
+      </select>
+      <select
+        bind:value={categoryFilter}
+        class="w-40 bg-muted/30 border border-transparent hover:border-border rounded-xl px-3 py-2.5 text-[10px] font-black uppercase outline-none transition-all"
+      >
+        <option value="">Semua Kategori</option>
+        <option value="tanaman utama">TANAMAN UTAMA</option>
+        <option value="pohon penaung">POHON PENAUNG</option>
+        <option value="tanaman lainnya">TANAMAN LAINNYA</option>
       </select>
       <select
         bind:value={demoplotFilter}
@@ -968,10 +1004,19 @@
           <div class="p-8 space-y-4">
             <div class="flex flex-col gap-1">
               <div
-                class="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-emerald-600/80"
+                class="flex items-center justify-between text-[10px] font-black uppercase tracking-wider text-emerald-600/80"
               >
-                <LandPlot size={12} />
-                {r.demoplot?.nama_demoplot || "Umum"}
+                <div class="flex items-center gap-1.5">
+                  <LandPlot size={12} />
+                  {r.demoplot?.nama_demoplot || "Umum"}
+                </div>
+                {#if r.kategori_tanaman}
+                  <span
+                    class="px-2 py-0.5 bg-emerald-500/10 text-emerald-600 rounded-md text-[8px] font-black uppercase tracking-widest"
+                  >
+                    {r.kategori_tanaman}
+                  </span>
+                {/if}
               </div>
               <div
                 class="flex items-center justify-between text-xs font-bold text-muted-foreground"
@@ -1156,20 +1201,12 @@
                   class="text-[10px] font-black uppercase tracking-widest text-muted-foreground"
                   >Jarak Tanam</label
                 >
-                <select
+                <input
+                  type="text"
                   bind:value={formJarakTanam}
+                  placeholder="contoh: 3x3"
                   class="w-full bg-muted/30 border-border rounded-xl p-4 text-sm font-bold"
-                >
-                  <option value={null} disabled selected
-                    >Pilih Jarak Tanam</option
-                  >
-                  <option value="2,5x2,5">2,5 x 2,5</option>
-
-                  <option value="3x3">3 x 3</option>
-                  <option value="5x5">5 x 5</option>
-                  <option value="10x10">10 x 10</option>
-                  <option value="tidak ada">Tidak ada</option>
-                </select>
+                />
               </div>
             </div>
 
@@ -1200,22 +1237,44 @@
               </div>
             </div>
 
-            <div class="space-y-2">
-              <label
-                class="text-[10px] font-black uppercase tracking-widest text-muted-foreground"
-                >Sumber Bibit</label
-              >
-              <select
-                bind:value={formSumberBibit}
-                class="w-full bg-muted/30 border-border rounded-xl p-4 text-sm font-bold"
-              >
-                <option value="bibit sertifikat">Bibit Sertifikat</option>
-                <option value="non sertifikat">Non Sertifikat</option>
-              </select>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div class="space-y-2">
+                <label
+                  class="text-[10px] font-black uppercase tracking-widest text-muted-foreground"
+                  >Kategori Tanaman <span class="text-red-500">*</span></label
+                >
+                <select
+                  bind:value={formKategoriTanaman}
+                  class="w-full bg-muted/30 border-border rounded-xl p-4 text-sm font-bold"
+                >
+                  <option value={null} disabled selected>Pilih Kategori</option>
+                  <option value="tanaman utama">Tanaman Utama</option>
+                  <option value="pohon penaung">Pohon Penaung</option>
+                  <option value="tanaman lainnya">Tanaman Lainnya</option>
+                </select>
+              </div>
+              <div class="space-y-2">
+                <label
+                  class="text-[10px] font-black uppercase tracking-widest text-muted-foreground"
+                  >Sumber Bibit</label
+                >
+                <select
+                  bind:value={formSumberBibit}
+                  class="w-full bg-muted/30 border-border rounded-xl p-4 text-sm font-bold"
+                >
+                  <option value="bibit sertifikat">Bibit Sertifikat</option>
+                  <option value="non sertifikat">Non Sertifikat</option>
+                  <option value="lainnya">Lainnya</option>
+                </select>
+              </div>
             </div>
           {/if}
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div
+            class="grid grid-cols-1 {formPeriode === 'P3'
+              ? 'md:grid-cols-3'
+              : 'md:grid-cols-2'} gap-6"
+          >
             <div class="space-y-2">
               <label
                 class="text-[10px] font-black uppercase tracking-widest text-muted-foreground"
@@ -1228,6 +1287,21 @@
                 class="w-full bg-muted/30 border-border rounded-xl p-4 text-sm font-bold"
               />
             </div>
+            {#if formPeriode === "P3"}
+              <div class="space-y-2">
+                <label
+                  class="text-[10px] font-black uppercase tracking-widest text-muted-foreground"
+                  >DBH (cm)</label
+                >
+                <input
+                  type="number"
+                  step="any"
+                  bind:value={formDbh}
+                  placeholder="0"
+                  class="w-full bg-muted/30 border-border rounded-xl p-4 text-sm font-bold"
+                />
+              </div>
+            {/if}
             <div class="space-y-2">
               <label
                 class="text-[10px] font-black uppercase tracking-widest text-muted-foreground"
@@ -1573,7 +1647,7 @@
             {selectedRecord.jenis_tanaman}
           </h2>
           <!-- Quick Metadata Grid -->
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
             <div
               class="p-6 bg-muted/30 rounded-3xl border border-border/50 text-center"
             >
@@ -1584,6 +1658,18 @@
               </p>
               <p class="text-xl font-black text-foreground">
                 {selectedRecord.tinggi || 0} <span class="text-xs">cm</span>
+              </p>
+            </div>
+            <div
+              class="p-6 bg-muted/30 rounded-3xl border border-border/50 text-center"
+            >
+              <p
+                class="text-[9px] font-black text-muted-foreground uppercase mb-1"
+              >
+                DBH
+              </p>
+              <p class="text-xl font-black text-foreground">
+                {selectedRecord.dbh || 0} <span class="text-xs">cm</span>
               </p>
             </div>
             <div
@@ -1615,10 +1701,10 @@
                   size={14}
                   class="text-emerald-600"
                 />
-                <p class="text-sm font-black text-emerald-600 uppercase">
-                  {selectedRecord.kondisi_pertumbuhan}
-                </p>
               </div>
+              <p class="text-sm font-black text-emerald-600 uppercase">
+                {selectedRecord.kondisi_pertumbuhan}
+              </p>
             </div>
             <div
               class="p-6 bg-muted/30 rounded-3xl border border-border/50 text-center"
@@ -1660,9 +1746,20 @@
                 {selectedRecord.jarak_tanam || "-"}
               </div>
             </div>
-            <div
-              class="p-6 bg-muted/20 border border-border/50 rounded-3xl lg:col-span-2"
-            >
+            <div class="p-6 bg-muted/20 border border-border/50 rounded-3xl">
+              <p
+                class="text-[9px] font-black text-muted-foreground uppercase mb-2"
+              >
+                Kategori Tanaman
+              </p>
+              <div
+                class="flex items-center gap-2 font-bold text-sm text-emerald-700 capitalize"
+              >
+                <Sprout size={14} />
+                {selectedRecord.kategori_tanaman || "-"}
+              </div>
+            </div>
+            <div class="p-6 bg-muted/20 border border-border/50 rounded-3xl">
               <p
                 class="text-[9px] font-black text-muted-foreground uppercase mb-2"
               >
@@ -1854,6 +1951,11 @@
                   <div class="text-right">
                     <p class="text-sm font-black text-emerald-600">
                       {h.tinggi || 0} cm
+                      {#if h.dbh}
+                        <span class="text-xs text-slate-500 font-bold ml-1"
+                          >/ {h.dbh} cm DBH</span
+                        >
+                      {/if}
                     </p>
                     <p
                       class="text-[9px] font-black uppercase text-muted-foreground opacity-50"

@@ -91,18 +91,21 @@ export const deleteMonitoringHPG = async (id: string) => {
 };
 
 export const uploadFotoHPG = async (file: File, recordId: string) => {
-  const fileExt = file.name.split('.').pop();
-  const fileName = `hpg/${recordId}-${Math.random()}.${fileExt}`;
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('recordId', recordId);
+  formData.append('folder', 'hpg');
 
-  const { error: uploadError } = await supabase.storage
-    .from('foto_hpg')
-    .upload(fileName, file);
+  const response = await fetch('/api/upload-cloudinary', {
+    method: 'POST',
+    body: formData,
+  });
 
-  if (uploadError) throw uploadError;
+  if (!response.ok) {
+    const err = await response.json();
+    throw new Error(err.error || 'Gagal mengupload foto ke Cloudinary');
+  }
 
-  const { data: { publicUrl } } = supabase.storage
-    .from('foto_hpg')
-    .getPublicUrl(fileName);
-
-  return publicUrl;
+  const { secure_url } = await response.json();
+  return secure_url;
 };

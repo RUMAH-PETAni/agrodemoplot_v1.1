@@ -13,6 +13,7 @@
     User as UserIcon,
     Settings,
     Bell,
+    AlertCircle,
   } from "@lucide/svelte";
   import { fade, fly, scale } from "svelte/transition";
 
@@ -35,6 +36,7 @@
   let hideNav = $state(false);
   let showDropdown = $state(false);
   let showLogoutConfirm = $state(false);
+  let showNotifications = $state(false);
 
   onMount(() => {
     if (browser) {
@@ -66,6 +68,12 @@
           const dropdown = document.querySelector(".dropdown-container");
           if (dropdown && !dropdown.contains(event.target as Node)) {
             showDropdown = false;
+          }
+        }
+        if (showNotifications) {
+          const notifContainer = document.querySelector(".notification-container");
+          if (notifContainer && !notifContainer.contains(event.target as Node)) {
+            showNotifications = false;
           }
         }
       };
@@ -138,15 +146,50 @@
       {#if loading}
         <div class="w-20 h-8 bg-muted animate-pulse rounded-lg"></div>
       {:else if user}
-        <!-- Notifications (Mock) -->
-        <button
-          class="hidden sm:flex p-2 rounded-xl hover:bg-muted text-muted-foreground transition-all relative"
-        >
-          <Bell class="w-5 h-5" />
-          <span
-            class="absolute top-2 right-2 w-2 h-2 bg-emerald-500 border-2 border-background rounded-full"
-          ></span>
-        </button>
+        <!-- Notifications -->
+        <div class="relative notification-container">
+          <button
+            onclick={() => {
+              showNotifications = !showNotifications;
+              showDropdown = false;
+            }}
+            class="hidden sm:flex p-2 rounded-xl hover:bg-muted text-muted-foreground transition-all relative active:scale-95"
+            aria-label="Notifikasi"
+          >
+            <Bell class="w-5 h-5" />
+            <span
+              class="absolute top-2 right-2 w-2.5 h-2.5 bg-amber-500 border-2 border-background rounded-full animate-pulse"
+            ></span>
+          </button>
+
+          {#if showNotifications}
+            <div
+              class="absolute right-0 mt-3 w-80 bg-card border border-border rounded-2xl shadow-2xl p-4 z-50 overflow-hidden space-y-4"
+              in:fly={{ y: 10, duration: 200 }}
+              out:fade={{ duration: 150 }}
+            >
+              <div class="flex items-center justify-between pb-2 border-b border-border/50">
+                <span class="text-xs font-black uppercase tracking-wider text-foreground">Notifikasi</span>
+                <span class="px-2 py-0.5 bg-amber-500/10 text-amber-600 text-[8px] font-black uppercase tracking-widest rounded-full">1 Baru</span>
+              </div>
+
+              <div class="space-y-3">
+                <div class="p-3 bg-amber-500/5 dark:bg-amber-500/10 border border-amber-500/20 rounded-2xl flex items-start gap-3">
+                  <div class="p-2 bg-amber-500/20 text-amber-600 rounded-xl shrink-0">
+                    <AlertCircle size={16} />
+                  </div>
+                  <div class="space-y-1">
+                    <h4 class="text-xs font-black text-amber-800 dark:text-amber-300 uppercase tracking-wide">AI-Gronomis Nonaktif</h4>
+                    <p class="text-[11px] text-muted-foreground leading-normal font-medium">
+                      Fitur chat AI-Gronomis saat ini belum berfungsi sementara waktu karena masalah koneksi provider.
+                    </p>
+                    <span class="text-[8px] text-slate-400 font-bold block pt-1">Baru Saja</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          {/if}
+        </div>
 
         <!-- User Profile Dropdown -->
         <div class="relative dropdown-container">

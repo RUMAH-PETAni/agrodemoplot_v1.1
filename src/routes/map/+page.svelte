@@ -2,6 +2,7 @@
   import { onMount, tick, mount } from "svelte";
   import { browser } from "$app/environment";
   import { fade, fly, scale } from "svelte/transition";
+  import Chart from "chart.js/auto";
   import {
     Map as MapIcon,
     Layers,
@@ -62,6 +63,63 @@
   let soilSummary = $state<any>(null);
   let climateSummary = $state<any>(null);
   let analitikLoading = $state(false);
+
+  // Chart.js untuk vegetasi
+  let veggieChart: Chart | null = null;
+  let veggieCanvas = $state<HTMLCanvasElement>();
+
+  $effect(() => {
+    if (selectedPlot && veggieCanvas) {
+      const data = {
+        labels: ["Tanaman Utama", "Pohon Penaung"],
+        datasets: [
+          {
+            data: [
+              selectedPlot.jumlah_tanaman_utama || 0,
+              selectedPlot.jumlah_pohon_penaung || 0,
+            ],
+            backgroundColor: ["#10b981", "#3b82f6"],
+            hoverOffset: 4,
+            borderWidth: 0,
+            borderRadius: 8,
+          },
+        ],
+      };
+
+      if (veggieChart) {
+        veggieChart.data = data;
+        veggieChart.update();
+      } else {
+        veggieChart = new Chart(veggieCanvas, {
+          type: "doughnut",
+          data: data,
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: false,
+              },
+              tooltip: {
+                enabled: true,
+                callbacks: {
+                  label: (context) => {
+                    return ` ${context.label}: ${context.raw} Pohon`;
+                  },
+                },
+              },
+            },
+            cutout: "75%",
+          },
+        });
+      }
+    } else {
+      if (veggieChart) {
+        veggieChart.destroy();
+        veggieChart = null;
+      }
+    }
+  });
 
   const baseMaps = {
     osm: {
@@ -286,9 +344,24 @@
         props: { size: 18, strokeWidth: 2.5 },
       });
 
-      const pulseColor = colorClass === "emerald" ? "bg-emerald-500/20" : colorClass === "indigo" ? "bg-indigo-500/20" : "bg-teal-500/20";
-      const borderColor = colorClass === "emerald" ? "border-emerald-500" : colorClass === "indigo" ? "border-indigo-500" : "border-teal-500";
-      const textColor = colorClass === "emerald" ? "text-emerald-700" : colorClass === "indigo" ? "text-indigo-700" : "text-teal-700";
+      const pulseColor =
+        colorClass === "emerald"
+          ? "bg-emerald-500/20"
+          : colorClass === "indigo"
+            ? "bg-indigo-500/20"
+            : "bg-teal-500/20";
+      const borderColor =
+        colorClass === "emerald"
+          ? "border-emerald-500"
+          : colorClass === "indigo"
+            ? "border-indigo-500"
+            : "border-teal-500";
+      const textColor =
+        colorClass === "emerald"
+          ? "text-emerald-700"
+          : colorClass === "indigo"
+            ? "text-indigo-700"
+            : "text-teal-700";
 
       const icon = L.divIcon({
         className: "custom-icon-marker",
@@ -756,7 +829,76 @@
           </button>
         </div>
 
-        <!-- Core Stats -->
+        <!-- Core Stats (Koordinat & Elevasi) -->
+        <div class="grid grid-cols-2 gap-4">
+          <div
+            class="bg-white/5 border border-white/5 rounded-3xl p-6 space-y-4"
+          >
+            <div class="flex items-center justify-between">
+              <div
+                class="w-10 h-10 rounded-2xl bg-rose-500/10 flex items-center justify-center text-rose-500"
+              >
+                <MapPin size={18} />
+              </div>
+              <span
+                class="text-[10px] font-black text-slate-500 uppercase tracking-widest"
+                >Koordinat</span
+              >
+            </div>
+            <div class="flex flex-col gap-1.5 pt-1">
+              {#if selectedPlot.latitude && selectedPlot.longitude}
+                <div
+                  class="flex items-center justify-between text-[11px] font-black text-white/95"
+                >
+                  <span
+                    class="text-slate-500 uppercase text-[9px] tracking-widest font-black"
+                    >Lat</span
+                  >
+                  <span>{selectedPlot.latitude.toFixed(6)}</span>
+                </div>
+                <div
+                  class="flex items-center justify-between text-[11px] font-black text-white/95"
+                >
+                  <span
+                    class="text-slate-500 uppercase text-[9px] tracking-widest font-black"
+                    >Lng</span
+                  >
+                  <span>{selectedPlot.longitude.toFixed(6)}</span>
+                </div>
+              {:else}
+                <span class="text-[10px] text-slate-500 font-bold italic"
+                  >Belum Geotagging</span
+                >
+              {/if}
+            </div>
+          </div>
+
+          <div
+            class="bg-white/5 border border-white/5 rounded-3xl p-6 space-y-4"
+          >
+            <div class="flex items-center justify-between">
+              <div
+                class="w-10 h-10 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-400"
+              >
+                <Mountain size={18} />
+              </div>
+              <span
+                class="text-[10px] font-black text-slate-500 uppercase tracking-widest"
+                >Elevasi</span
+              >
+            </div>
+            <div class="flex items-baseline gap-1">
+              <span class="text-2xl font-black text-white"
+                >{selectedPlot.altitude || 0}</span
+              >
+              <span class="text-[10px] font-bold text-slate-500 uppercase"
+                >MDPL</span
+              >
+            </div>
+          </div>
+        </div>
+
+        <!-- Core Stats (Presipitasi & Suhu) -->
         <div class="grid grid-cols-2 gap-4">
           <div
             class="bg-white/5 border border-white/5 rounded-3xl p-6 space-y-4"
@@ -887,9 +1029,149 @@
                 Total Tanaman
               </p>
               <p class="text-lg font-black">
-                {selectedPlot.jumlah_tanaman_utama || 0} Pohon
+                {(selectedPlot.jumlah_tanaman_utama || 0) +
+                  (selectedPlot.jumlah_pohon_penaung || 0)} Batang
               </p>
             </div>
+          </div>
+
+          <!-- Detail Jenis Tanaman -->
+          <div class="space-y-3 pt-3">
+            <div
+              class="flex items-center justify-between p-3.5 bg-white/5 rounded-2xl border border-white/5"
+            >
+              <div class="flex items-center gap-3">
+                <div
+                  class="w-8 h-8 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-400"
+                >
+                  <Sprout size={14} />
+                </div>
+                <div class="flex flex-col">
+                  <span
+                    class="text-[8px] font-black text-slate-500 uppercase tracking-wider"
+                    >Tanaman Utama</span
+                  >
+                  <span class="text-xs font-black text-white"
+                    >{selectedPlot.tanaman_utama || "-"}</span
+                  >
+                </div>
+              </div>
+              <span class="text-xs font-black text-emerald-400">
+                {selectedPlot.jumlah_tanaman_utama || 0} btg
+              </span>
+            </div>
+
+            <div
+              class="flex items-center justify-between p-3.5 bg-white/5 rounded-2xl border border-white/5"
+            >
+              <div class="flex items-center gap-3">
+                <div
+                  class="w-8 h-8 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-400"
+                >
+                  <Trees size={14} />
+                </div>
+                <div class="flex flex-col">
+                  <span
+                    class="text-[8px] font-black text-slate-500 uppercase tracking-wider"
+                    >Pohon Penaung</span
+                  >
+                  <span class="text-xs font-black text-white"
+                    >{selectedPlot.pohon_penanung || "-"}</span
+                  >
+                </div>
+              </div>
+              <span class="text-xs font-black text-blue-400">
+                {selectedPlot.jumlah_pohon_penaung || 0} btg
+              </span>
+            </div>
+
+            <div
+              class="flex items-center justify-between p-3.5 bg-white/5 rounded-2xl border border-white/5"
+            >
+              <div class="flex items-center gap-3">
+                <div
+                  class="w-8 h-8 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-400"
+                >
+                  <Leaf size={14} />
+                </div>
+                <div class="flex flex-col">
+                  <span
+                    class="text-[8px] font-black text-slate-500 uppercase tracking-wider"
+                    >Tanaman Lainnya</span
+                  >
+                  <span class="text-xs font-black text-white"
+                    >{selectedPlot.jenis_tanaman_lainnya || "-"}</span
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex flex-col items-center gap-6">
+            <!-- Pie Chart (Chart.js) -->
+            {#if (selectedPlot.jumlah_tanaman_utama || 0) + (selectedPlot.jumlah_pohon_penaung || 0) > 0}
+              {@const total =
+                (selectedPlot.jumlah_tanaman_utama || 0) +
+                (selectedPlot.jumlah_pohon_penaung || 0)}
+              {@const pUtama =
+                ((selectedPlot.jumlah_tanaman_utama || 0) / total) * 100}
+              {@const pPenaung =
+                ((selectedPlot.jumlah_pohon_penaung || 0) / total) * 100}
+
+              <div class="relative w-32 h-32 flex-shrink-0 mx-auto">
+                <canvas bind:this={veggieCanvas}></canvas>
+                <div
+                  class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none"
+                >
+                  <span
+                    class="text-[8px] font-black text-slate-400 uppercase tracking-tighter"
+                    >Total</span
+                  >
+                  <span class="text-xs font-black text-white">{total}</span>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 gap-3 w-full">
+                <div
+                  class="flex items-center justify-between p-3.5 bg-white/5 rounded-2xl border border-white/5"
+                >
+                  <div class="flex items-center gap-3">
+                    <div class="w-2.5 h-2.5 rounded-full bg-emerald-500"></div>
+                    <span
+                      class="text-[10px] font-black uppercase tracking-wider text-slate-300"
+                      >Tanaman Utama</span
+                    >
+                  </div>
+                  <span class="text-xs font-black text-emerald-400"
+                    >{Math.round(pUtama)}%</span
+                  >
+                </div>
+                <div
+                  class="flex items-center justify-between p-3.5 bg-white/5 rounded-2xl border border-white/5"
+                >
+                  <div class="flex items-center gap-3">
+                    <div class="w-2.5 h-2.5 rounded-full bg-blue-500"></div>
+                    <span
+                      class="text-[10px] font-black uppercase tracking-wider text-slate-300"
+                      >Pohon Penaung</span
+                    >
+                  </div>
+                  <span class="text-xs font-black text-blue-400"
+                    >{Math.round(pPenaung)}%</span
+                  >
+                </div>
+              </div>
+            {:else}
+              <div
+                class="w-full py-8 text-center bg-white/5 rounded-3xl border border-dashed border-white/10"
+              >
+                <p
+                  class="text-[9px] font-black text-slate-500 uppercase tracking-widest"
+                >
+                  Data Populasi Kosong
+                </p>
+              </div>
+            {/if}
           </div>
         </div>
       </div>

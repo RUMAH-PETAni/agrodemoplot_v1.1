@@ -381,6 +381,15 @@
   }
 
   function openMapDrawer(demoplot: Demoplot) {
+    if (!demoplot.polygon && (!demoplot.latitude || !demoplot.longitude)) {
+      error = "Geo-tagging tidak tersedia";
+      setTimeout(() => {
+        if (error === "Geo-tagging tidak tersedia") {
+          error = "";
+        }
+      }, 3000);
+      return;
+    }
     selectedDemoplot = demoplot;
     showMapDrawer = true;
     showDetailDrawer = false;
@@ -1087,29 +1096,52 @@
           </div>
 
           <div class="px-5 pb-5 space-y-6">
-            <div class="grid grid-cols-1 gap-3">
+            <div class="space-y-3">
+              <!-- Koordinat (Atas, Penuh) -->
               <div class="p-4 bg-muted/30 rounded-2xl border border-border/50">
                 <p
                   class="text-[8px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-1"
                 >
-                  Luas Plot
+                  Koordinat
                 </p>
                 <div class="flex items-center gap-2">
-                  <LandPlot size={14} class="text-emerald-500" />
-                  <span class="text-xs font-bold"
-                    >{p.luas_demoplot || 0} ha</span
-                  >
+                  <MapPin size={14} class="text-rose-500" />
+                  <span class="text-xs font-bold truncate">
+                    {#if p.latitude && p.longitude}
+                      {p.latitude.toFixed(6)}, {p.longitude.toFixed(6)}
+                    {:else}
+                      <span class="text-[10px] text-muted-foreground italic font-medium">Belum Geotagging</span>
+                    {/if}
+                  </span>
                 </div>
               </div>
-              <div class="p-4 bg-muted/30 rounded-2xl border border-border/50">
-                <p
-                  class="text-[8px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-1"
-                >
-                  Elevasi
-                </p>
-                <div class="flex items-center gap-2">
-                  <Mountain size={14} class="text-blue-500" />
-                  <span class="text-xs font-bold">{p.altitude || 0} m</span>
+
+              <!-- Luas & Elevasi (Bawah, Satu Baris Kiri-Kanan) -->
+              <div class="grid grid-cols-2 gap-3">
+                <div class="p-4 bg-muted/30 rounded-2xl border border-border/50">
+                  <p
+                    class="text-[8px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-1"
+                  >
+                    Luas Plot
+                  </p>
+                  <div class="flex items-center gap-2">
+                    <LandPlot size={14} class="text-emerald-500" />
+                    <span class="text-xs font-bold truncate"
+                      >{p.luas_demoplot || 0} ha</span
+                    >
+                  </div>
+                </div>
+
+                <div class="p-4 bg-muted/30 rounded-2xl border border-border/50">
+                  <p
+                    class="text-[8px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-1"
+                  >
+                    Elevasi
+                  </p>
+                  <div class="flex items-center gap-2">
+                    <Mountain size={14} class="text-blue-500" />
+                    <span class="text-xs font-bold truncate">{p.altitude || 0} m</span>
+                  </div>
                 </div>
               </div>
             </div>

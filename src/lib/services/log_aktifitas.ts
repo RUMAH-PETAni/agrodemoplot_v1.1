@@ -52,23 +52,23 @@ export async function deleteLogAktifitas(id: string): Promise<void> {
 }
 
 export async function uploadFotoAktifitas(file: File, logId: string): Promise<string> {
-  const fileExt = file.name.split('.').pop();
-  const fileName = `${logId}-${Date.now()}.${fileExt}`;
-  const filePath = `${fileName}`;
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('recordId', logId);
+  formData.append('folder', 'aktivitas');
 
-  const { error: uploadError } = await supabase.storage
-    .from('foto_aktifitas')
-    .upload(filePath, file);
+  const response = await fetch('/api/upload-cloudinary', {
+    method: 'POST',
+    body: formData,
+  });
 
-  if (uploadError) {
-    throw uploadError;
+  if (!response.ok) {
+    const err = await response.json();
+    throw new Error(err.error || 'Gagal mengupload foto ke Cloudinary');
   }
 
-  const { data } = supabase.storage
-    .from('foto_aktifitas')
-    .getPublicUrl(filePath);
-
-  return data.publicUrl;
+  const { secure_url } = await response.json();
+  return secure_url;
 }
 
 export async function deleteFotoAktifitas(publicUrl: string): Promise<void> {

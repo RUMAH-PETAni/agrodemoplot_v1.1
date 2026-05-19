@@ -29,6 +29,7 @@
     Home,
     LocateFixed,
     Bug,
+    ShieldAlert,
   } from "@lucide/svelte";
   import { getDemoplotList } from "$lib/services/demoplot";
   import type { Demoplot } from "../../types/demoplot";
@@ -296,21 +297,41 @@
         `);
     });
 
-    // Render HPG Markers (Bug)
+    // Render HPG Markers (Bug/ShieldAlert/Leaf)
     hpgData.forEach((h) => {
       if (!h.latitude || !h.longitude) return;
 
+      // Differentiate icon & styling based on HPG category
+      let IconComponent = Bug;
+      let colorClass = "rose"; // Default
+      
+      if (h.kategori_gangguan === "penyakit") {
+        IconComponent = ShieldAlert;
+        colorClass = "amber";
+      } else if (h.kategori_gangguan === "gulma") {
+        IconComponent = Leaf;
+        colorClass = "green";
+      } else if (h.kategori_gangguan === "hama") {
+        IconComponent = Bug;
+        colorClass = "rose";
+      }
+
       const iconContainer = document.createElement("div");
-      mount(Bug, {
+      mount(IconComponent, {
         target: iconContainer,
         props: { size: 18, strokeWidth: 2.5 },
       });
 
+      const pulseColor = colorClass === "rose" ? "bg-rose-500/20" : colorClass === "amber" ? "bg-amber-500/20" : "bg-emerald-500/20";
+      const borderColor = colorClass === "rose" ? "border-rose-500" : colorClass === "amber" ? "border-amber-500" : "border-emerald-500";
+      const textColor = colorClass === "rose" ? "text-rose-700" : colorClass === "amber" ? "text-amber-700" : "text-emerald-700";
+      const popupTextHeaderColor = colorClass === "rose" ? "text-rose-600" : colorClass === "amber" ? "text-amber-600" : "text-emerald-600";
+
       const icon = L.divIcon({
         className: "custom-icon-marker",
         html: `<div class="marker-container group">
-                <div class="marker-pulse bg-orange-500/20"></div>
-                <div class="w-10 h-10 bg-white border-2 border-orange-500 rounded-full flex items-center justify-center text-orange-700 shadow-lg transition-transform hover:scale-125 relative z-10">
+                <div class="marker-pulse ${pulseColor}"></div>
+                <div class="w-10 h-10 bg-white border-2 ${borderColor} rounded-full flex items-center justify-center ${textColor} shadow-lg transition-transform hover:scale-125 relative z-10">
                   ${iconContainer.innerHTML}
                 </div>
               </div>`,
@@ -323,7 +344,7 @@
         zIndexOffset: 500, // Below farmers
       }).addTo(map).bindPopup(`
           <div class="p-2">
-            <h4 class="font-black text-[10px] uppercase text-orange-600 mb-1">HPG Monitoring</h4>
+            <h4 class="font-black text-[10px] uppercase ${popupTextHeaderColor} mb-1">HPG Monitoring</h4>
             <p class="text-xs font-bold">${h.nama_jenis || "Hama/Penyakit"}</p>
             <p class="text-[10px] text-slate-500">${h.kategori_gangguan || "-"} (${h.tingkat_serangan || "-"})</p>
           </div>

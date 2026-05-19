@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from "svelte";
+  import { onMount, mount } from "svelte";
   import {
     getMonitoringHPG,
     createMonitoringHPG,
@@ -573,7 +573,44 @@
     const markers: any[] = [];
     records.forEach((r) => {
       if (r.latitude && r.longitude) {
-        const marker = L.marker([r.latitude, r.longitude]).addTo(leafletMap)
+        // Differentiate icon & styling based on HPG category
+        let IconComponent = Bug;
+        let colorClass = "rose"; // Default
+        
+        if (r.kategori_gangguan === "penyakit") {
+          IconComponent = ShieldAlert;
+          colorClass = "amber";
+        } else if (r.kategori_gangguan === "gulma") {
+          IconComponent = Leaf;
+          colorClass = "green";
+        } else if (r.kategori_gangguan === "hama") {
+          IconComponent = Bug;
+          colorClass = "rose";
+        }
+
+        const iconContainer = document.createElement("div");
+        mount(IconComponent, {
+          target: iconContainer,
+          props: { size: 18, strokeWidth: 2.5 },
+        });
+
+        const pulseColor = colorClass === "rose" ? "bg-rose-500/20" : colorClass === "amber" ? "bg-amber-500/20" : "bg-emerald-500/20";
+        const borderColor = colorClass === "rose" ? "border-rose-500" : colorClass === "amber" ? "border-amber-500" : "border-emerald-500";
+        const textColor = colorClass === "rose" ? "text-rose-700" : colorClass === "amber" ? "text-amber-700" : "text-emerald-700";
+
+        const icon = L.divIcon({
+          className: "custom-icon-marker",
+          html: `<div class="marker-container group">
+                  <div class="marker-pulse ${pulseColor}"></div>
+                  <div class="w-10 h-10 bg-white border-2 ${borderColor} rounded-full flex items-center justify-center ${textColor} shadow-lg transition-transform hover:scale-125 relative z-10">
+                    ${iconContainer.innerHTML}
+                  </div>
+                </div>`,
+          iconSize: [40, 40],
+          iconAnchor: [20, 20],
+        });
+
+        const marker = L.marker([r.latitude, r.longitude], { icon }).addTo(leafletMap)
           .bindPopup(`
             <div class="p-4 min-w-[200px]">
               <p class="text-[9px] font-black text-red-600 uppercase tracking-widest mb-1">${r.kategori_gangguan}</p>
@@ -604,6 +641,15 @@
   }
 
   function openMapForRecord(record: MonitoringHPG) {
+    if (!record.latitude || !record.longitude) {
+      error = "Geo-tagging tidak tersedia";
+      setTimeout(() => {
+        if (error === "Geo-tagging tidak tersedia") {
+          error = "";
+        }
+      }, 3000);
+      return;
+    }
     focusRecord = record;
     showMapDrawer = true;
   }
@@ -1939,5 +1985,34 @@
     border-radius: 50%;
     cursor: pointer;
     box-shadow: 0 4px 10px rgba(220, 38, 38, 0.3);
+  }
+
+  :global(.marker-container) {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  :global(.marker-pulse) {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    z-index: 1;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0% {
+      transform: scale(0.5);
+      opacity: 1;
+    }
+    100% {
+      transform: scale(1.5);
+      opacity: 0;
+    }
   }
 </style>

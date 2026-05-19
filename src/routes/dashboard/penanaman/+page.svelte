@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from "svelte";
+  import { onMount, mount } from "svelte";
   import {
     getMonitoringPenanaman,
     createMonitoringPenanaman,
@@ -596,7 +596,26 @@
     const markers: any[] = [];
     latestStatusRecords.forEach((r) => {
       if (r.latitude && r.longitude) {
-        const marker = L.marker([r.latitude, r.longitude]).addTo(leafletMap)
+        // Render the Sprout icon to a temporary container to get its HTML
+        const iconContainer = document.createElement("div");
+        mount(Sprout, {
+          target: iconContainer,
+          props: { size: 18, strokeWidth: 2.5 },
+        });
+
+        const icon = L.divIcon({
+          className: "custom-icon-marker",
+          html: `<div class="marker-container group">
+                  <div class="marker-pulse bg-emerald-500/20"></div>
+                  <div class="w-10 h-10 bg-white border-2 border-emerald-500 rounded-full flex items-center justify-center text-emerald-700 shadow-lg transition-transform hover:scale-125 relative z-10">
+                    ${iconContainer.innerHTML}
+                  </div>
+                </div>`,
+          iconSize: [40, 40],
+          iconAnchor: [20, 20],
+        });
+
+        const marker = L.marker([r.latitude, r.longitude], { icon }).addTo(leafletMap)
           .bindPopup(`
             <div class="p-4 min-w-[200px]">
               <p class="text-[9px] font-black text-emerald-600 uppercase tracking-widest mb-1">ID Tanaman: ${r.kode_tanaman}</p>
@@ -667,6 +686,15 @@
   }
 
   function openMapForRecord(record: MonitoringPenanaman) {
+    if (!record.latitude || !record.longitude) {
+      error = "Geo-tagging tidak tersedia";
+      setTimeout(() => {
+        if (error === "Geo-tagging tidak tersedia") {
+          error = "";
+        }
+      }, 3000);
+      return;
+    }
     focusRecord = record;
     showMapDrawer = true;
   }
@@ -2008,3 +2036,35 @@
     </div>
   </div>
 {/if}
+
+<style>
+  :global(.marker-container) {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  :global(.marker-pulse) {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    background: rgba(16, 185, 129, 0.2);
+    border-radius: 50%;
+    z-index: 1;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0% {
+      transform: scale(0.5);
+      opacity: 1;
+    }
+    100% {
+      transform: scale(1.5);
+      opacity: 0;
+    }
+  }
+</style>

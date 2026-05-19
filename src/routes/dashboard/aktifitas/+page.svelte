@@ -115,6 +115,7 @@
   let deleteTarget = $state<LogAktifitas | null>(null);
   let isEditing = $state(false);
   let editingId = $state("");
+  let previewImage = $state<string | null>(null);
 
   let formDemoplotId = $state("");
   let formTanggal = $state(new Date().toISOString().split("T")[0]);
@@ -993,16 +994,22 @@
       </div>
       <!-- Content -->
       <div class="overflow-y-auto grow custom-scrollbar">
-        <!-- Hero Image -->
-        {#if selectedLog.foto_dokumentasi}
-          <div class="h-80 w-full overflow-hidden">
-            <img
-              src={selectedLog.foto_dokumentasi}
-              alt={selectedLog.kategori}
-              class="w-full h-full object-cover"
-            />
-          </div>
-        {/if}
+        {#if selectedLog}
+          <!-- Hero Image -->
+          {#if selectedLog.foto_dokumentasi}
+            <div class="h-80 w-full overflow-hidden">
+              <button
+                onclick={() => { if (selectedLog) previewImage = selectedLog.foto_dokumentasi; }}
+                class="w-full h-full cursor-zoom-in block p-0 border-0 bg-transparent"
+              >
+                <img
+                  src={selectedLog.foto_dokumentasi}
+                  alt={selectedLog.kategori}
+                  class="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                />
+              </button>
+            </div>
+          {/if}
 
         <div class="p-10 space-y-12">
           <h2 class="text-3xl font-black tracking-tight leading-none uppercase">
@@ -1140,6 +1147,7 @@
             </div>
           </div>
         </div>
+        {/if}
       </div>
     </div>
   </div>
@@ -1330,6 +1338,39 @@
           {/each}
         </div>
       </div>
+    </div>
+  </div>
+{/if}
+
+<!-- Image Preview Modal -->
+{#if previewImage}
+  <div
+    class="fixed inset-0 z-[5000] flex items-center justify-center p-6 md:p-12 cursor-pointer"
+    in:fade={{ duration: 200 }}
+    onclick={() => (previewImage = null)}
+  >
+    <div
+      class="absolute inset-0 bg-slate-950/60 backdrop-blur-sm"
+      in:fade
+    ></div>
+
+    <div
+      class="relative max-w-4xl max-h-[80vh] bg-background p-2 rounded-[2rem] shadow-2xl cursor-default overflow-hidden"
+      in:scale={{ start: 0.95, duration: 300, easing: backOut }}
+      onclick={(e) => e.stopPropagation()}
+    >
+      <button
+        class="absolute top-4 right-4 z-10 p-2 bg-white/20 hover:bg-white/40 backdrop-blur-md rounded-full text-white shadow-xl transition-all"
+        onclick={() => (previewImage = null)}
+      >
+        <X size={20} />
+      </button>
+
+      <img
+        src={previewImage}
+        alt="Preview"
+        class="w-full h-full max-h-[75vh] object-contain rounded-[1.5rem]"
+      />
     </div>
   </div>
 {/if}

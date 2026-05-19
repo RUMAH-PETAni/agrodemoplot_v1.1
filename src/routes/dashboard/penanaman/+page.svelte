@@ -145,6 +145,7 @@
   let showDeleteConfirm = $state(false);
   let selectedRecord = $state<MonitoringPenanaman | null>(null);
   let deleteTarget = $state<MonitoringPenanaman | null>(null);
+  let previewImage = $state<string | null>(null);
   let isEditing = $state(false);
   let editingId = $state("");
 
@@ -1720,11 +1721,16 @@
               <div
                 class="flex-none w-64 h-64 relative group border-r border-white/10 overflow-hidden"
               >
-                <img
-                  src={h.foto_tanaman}
-                  alt=""
-                  class="w-full h-full object-cover"
-                />
+                <button
+                  onclick={() => (previewImage = h.foto_tanaman)}
+                  class="w-full h-full cursor-zoom-in block p-0 border-0 bg-transparent"
+                >
+                  <img
+                    src={h.foto_tanaman}
+                    alt=""
+                    class="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                  />
+                </button>
                 <div
                   class="absolute top-4 left-4 px-3 py-1.5 bg-black/50 backdrop-blur-md rounded-xl text-[10px] font-black text-white uppercase tracking-widest border border-white/20"
                 >
@@ -2117,6 +2123,39 @@
           >Hapus</button
         >
       </div>
+    </div>
+  </div>
+{/if}
+
+<!-- Image Preview Modal -->
+{#if previewImage}
+  <div
+    class="fixed inset-0 z-[5000] flex items-center justify-center p-6 md:p-12 cursor-pointer"
+    in:fade={{ duration: 200 }}
+    onclick={() => (previewImage = null)}
+  >
+    <div
+      class="absolute inset-0 bg-slate-950/60 backdrop-blur-sm"
+      in:fade
+    ></div>
+
+    <div
+      class="relative max-w-4xl max-h-[80vh] bg-background p-2 rounded-[2rem] shadow-2xl cursor-default overflow-hidden"
+      in:scale={{ start: 0.95, duration: 300, easing: backOut }}
+      onclick={(e) => e.stopPropagation()}
+    >
+      <button
+        class="absolute top-4 right-4 z-10 p-2 bg-white/20 hover:bg-white/40 backdrop-blur-md rounded-full text-white shadow-xl transition-all"
+        onclick={() => (previewImage = null)}
+      >
+        <X size={20} />
+      </button>
+
+      <img
+        src={previewImage}
+        alt="Preview"
+        class="w-full h-full max-h-[75vh] object-contain rounded-[1.5rem]"
+      />
     </div>
   </div>
 {/if}

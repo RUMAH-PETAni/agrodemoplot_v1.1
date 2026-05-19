@@ -1496,11 +1496,16 @@
         <div class="grow overflow-y-auto custom-scrollbar">
           <div class="relative h-72 overflow-hidden">
             {#if selectedRecord.foto}
-              <img
-                src={selectedRecord.foto}
-                alt=""
-                class="w-full h-full object-cover opacity-80"
-              />
+              <button
+                onclick={() => { if (selectedRecord) previewImage = selectedRecord.foto; }}
+                class="w-full h-full cursor-zoom-in block p-0 border-0 bg-transparent"
+              >
+                <img
+                  src={selectedRecord.foto}
+                  alt=""
+                  class="w-full h-full object-cover opacity-80 hover:scale-105 transition-transform duration-500"
+                />
+              </button>
             {:else}
               <div
                 class="w-full h-full flex flex-col items-center justify-center gap-6 text-white/10"

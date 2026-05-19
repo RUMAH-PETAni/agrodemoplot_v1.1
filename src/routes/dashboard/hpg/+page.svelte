@@ -156,7 +156,8 @@
   let mapPolygons: any[] = [];
 
   function zoomToAll() {
-    if (!leafletMap || (mapMarkers.length === 0 && mapPolygons.length === 0)) return;
+    if (!leafletMap || (mapMarkers.length === 0 && mapPolygons.length === 0))
+      return;
     const group = L.featureGroup([...mapMarkers, ...mapPolygons]);
     leafletMap.fitBounds(group.getBounds().pad(0.1));
   }
@@ -184,7 +185,7 @@
         (err) => {
           console.error("Geolocation error:", err);
           error = "Gagal mengambil lokasi: " + err.message;
-        }
+        },
       );
     }
   }
@@ -617,7 +618,7 @@
         // Differentiate icon & styling based on HPG category
         let IconComponent = Bug;
         let colorClass = "rose"; // Default
-        
+
         if (r.kategori_gangguan === "penyakit") {
           IconComponent = ShieldAlert;
           colorClass = "amber";
@@ -635,9 +636,24 @@
           props: { size: 18, strokeWidth: 2.5 },
         });
 
-        const pulseColor = colorClass === "rose" ? "bg-rose-500/20" : colorClass === "amber" ? "bg-amber-500/20" : "bg-emerald-500/20";
-        const borderColor = colorClass === "rose" ? "border-rose-500" : colorClass === "amber" ? "border-amber-500" : "border-emerald-500";
-        const textColor = colorClass === "rose" ? "text-rose-700" : colorClass === "amber" ? "text-amber-700" : "text-emerald-700";
+        const pulseColor =
+          colorClass === "rose"
+            ? "bg-rose-500/20"
+            : colorClass === "amber"
+              ? "bg-amber-500/20"
+              : "bg-emerald-500/20";
+        const borderColor =
+          colorClass === "rose"
+            ? "border-rose-500"
+            : colorClass === "amber"
+              ? "border-amber-500"
+              : "border-emerald-500";
+        const textColor =
+          colorClass === "rose"
+            ? "text-rose-700"
+            : colorClass === "amber"
+              ? "text-amber-700"
+              : "text-emerald-700";
 
         const icon = L.divIcon({
           className: "custom-icon-marker",
@@ -651,8 +667,9 @@
           iconAnchor: [20, 20],
         });
 
-        const marker = L.marker([r.latitude, r.longitude], { icon }).addTo(leafletMap)
-          .bindPopup(`
+        const marker = L.marker([r.latitude, r.longitude], { icon }).addTo(
+          leafletMap,
+        ).bindPopup(`
             <div class="p-4 min-w-[200px]">
               <p class="text-[9px] font-black text-red-600 uppercase tracking-widest mb-1">${r.kategori_gangguan}</p>
               <h3 class="font-black text-slate-800 uppercase text-sm leading-tight mb-2">${r.nama_jenis}</h3>
@@ -1373,7 +1390,10 @@
                   <div
                     class="absolute inset-0 bg-white/60 backdrop-blur-sm flex items-center justify-center"
                   >
-                    <RefreshCw size={32} class="animate-spin text-emerald-600" />
+                    <RefreshCw
+                      size={32}
+                      class="animate-spin text-emerald-600"
+                    />
                   </div>
                 {/if}
               </div>
@@ -1756,15 +1776,19 @@
             </div>
           </div>
 
-          <!-- Navigation Controls (Home and Geolocate) -->
+          <!-- Navigation Controls (Home) -->
           <div class="absolute right-6 bottom-6 z-[1000] flex flex-col gap-3">
             <button
               onclick={zoomToAll}
               class="w-12 h-12 bg-slate-900/60 backdrop-blur-3xl border border-white/20 rounded-2xl flex items-center justify-center text-white hover:bg-white/30 transition-all active:scale-95 shadow-2xl group"
               title="Zoom ke Semua Plot"
             >
-              <Home size={20} class="group-hover:text-emerald-400 transition-colors" />
+              <Home
+                size={20}
+                class="group-hover:text-emerald-400 transition-colors"
+              />
             </button>
+            <!-- Navigation Controls (Geolocate) -->
             <button
               onclick={getCurrentLocation}
               class="w-12 h-12 bg-slate-900/60 backdrop-blur-3xl border border-white/20 rounded-2xl flex items-center justify-center text-white hover:bg-white/30 transition-all active:scale-95 shadow-2xl group"
@@ -1812,7 +1836,9 @@
           >
         </div>
 
-        <div class="flex-1 overflow-y-auto p-8 pt-0 space-y-6 custom-scrollbar relative">
+        <div
+          class="flex-1 overflow-y-auto p-8 pt-0 space-y-6 custom-scrollbar relative"
+        >
           <!-- Floating Glass Search -->
           <div class="sticky top-4 z-[100] pb-4 bg-card/0">
             <div

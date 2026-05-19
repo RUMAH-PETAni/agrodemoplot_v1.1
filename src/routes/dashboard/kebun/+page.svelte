@@ -315,7 +315,7 @@
         (err) => {
           console.error("Geolocation error:", err);
           error = "Gagal mengambil lokasi: " + err.message;
-        }
+        },
       );
     }
   }
@@ -1790,15 +1790,19 @@
           </div>
         </div>
 
-        <!-- Navigation Controls (Home and Geolocate) -->
+        <!-- Navigation Controls (Home) -->
         <div class="absolute right-6 bottom-6 z-[1000] flex flex-col gap-3">
           <button
             onclick={zoomToAll}
             class="w-12 h-12 bg-slate-900/60 backdrop-blur-3xl border border-white/20 rounded-2xl flex items-center justify-center text-white hover:bg-white/30 transition-all active:scale-95 shadow-2xl group"
             title="Zoom ke Demoplot"
           >
-            <Home size={20} class="group-hover:text-emerald-400 transition-colors" />
+            <Home
+              size={20}
+              class="group-hover:text-emerald-400 transition-colors"
+            />
           </button>
+          <!-- Navigation Controls (Geolocate) -->
           <button
             onclick={getCurrentLocation}
             class="w-12 h-12 bg-slate-900/60 backdrop-blur-3xl border border-white/20 rounded-2xl flex items-center justify-center text-white hover:bg-white/30 transition-all active:scale-95 shadow-2xl group"

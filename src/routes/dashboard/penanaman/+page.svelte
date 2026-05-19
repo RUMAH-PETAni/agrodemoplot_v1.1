@@ -183,7 +183,8 @@
   let mapPolygons: any[] = [];
 
   function zoomToAll() {
-    if (!leafletMap || (mapMarkers.length === 0 && mapPolygons.length === 0)) return;
+    if (!leafletMap || (mapMarkers.length === 0 && mapPolygons.length === 0))
+      return;
     const group = L.featureGroup([...mapMarkers, ...mapPolygons]);
     leafletMap.fitBounds(group.getBounds().pad(0.1));
   }
@@ -211,7 +212,7 @@
         (err) => {
           console.error("Geolocation error:", err);
           error = "Gagal mengambil lokasi: " + err.message;
-        }
+        },
       );
     }
   }
@@ -654,8 +655,9 @@
           iconAnchor: [20, 20],
         });
 
-        const marker = L.marker([r.latitude, r.longitude], { icon }).addTo(leafletMap)
-          .bindPopup(`
+        const marker = L.marker([r.latitude, r.longitude], { icon }).addTo(
+          leafletMap,
+        ).bindPopup(`
             <div class="p-4 min-w-[200px]">
               <p class="text-[9px] font-black text-emerald-600 uppercase tracking-widest mb-1">ID Tanaman: ${r.kode_tanaman}</p>
               <h3 class="font-black text-slate-800 uppercase text-sm leading-tight mb-2">${r.jenis_tanaman}</h3>
@@ -1635,15 +1637,19 @@
           </div>
         </div>
 
-        <!-- Navigation Controls (Home and Geolocate) -->
+        <!-- Navigation Controls (Home) -->
         <div class="absolute right-6 bottom-6 z-[1000] flex flex-col gap-3">
           <button
             onclick={zoomToAll}
             class="w-12 h-12 bg-slate-900/60 backdrop-blur-3xl border border-white/20 rounded-2xl flex items-center justify-center text-white hover:bg-white/30 transition-all active:scale-95 shadow-2xl group"
             title="Zoom ke Semua Plot"
           >
-            <Home size={20} class="group-hover:text-emerald-400 transition-colors" />
+            <Home
+              size={20}
+              class="group-hover:text-emerald-400 transition-colors"
+            />
           </button>
+          <!-- Navigation Controls (Geolocate) -->
           <button
             onclick={getCurrentLocation}
             class="w-12 h-12 bg-slate-900/60 backdrop-blur-3xl border border-white/20 rounded-2xl flex items-center justify-center text-white hover:bg-white/30 transition-all active:scale-95 shadow-2xl group"

@@ -16,6 +16,7 @@
     Plus,
     Search,
     Filter,
+    Cherry,
     Calendar,
     ArrowLeft,
     TrendingUp,
@@ -315,7 +316,7 @@
       case "tenaga kerja":
         return User;
       case "hasil panen":
-        return Sprout;
+        return Cherry;
       default:
         return Box;
     }
@@ -436,7 +437,7 @@
           <div
             class="absolute -right-4 -bottom-4 text-emerald-400/20 group-hover:text-emerald-400/30 transition-colors"
           >
-            <Sprout size={80} strokeWidth={1} />
+            <Cherry size={80} strokeWidth={1} />
           </div>
           <p
             class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1"

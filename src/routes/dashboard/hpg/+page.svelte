@@ -20,6 +20,7 @@
     Calendar,
     Search,
     Filter,
+    Flower,
     Map,
     MapPin,
     Camera,
@@ -466,7 +467,7 @@
   function getCategoryIcon(cat: string) {
     if (cat === "hama") return Bug;
     if (cat === "penyakit") return ShieldAlert;
-    return Leaf;
+    return Flower;
   }
 
   function formatDate(d: string) {
@@ -623,7 +624,7 @@
           IconComponent = ShieldAlert;
           colorClass = "amber";
         } else if (r.kategori_gangguan === "gulma") {
-          IconComponent = Leaf;
+          IconComponent = Flower;
           colorClass = "green";
         } else if (r.kategori_gangguan === "hama") {
           IconComponent = Bug;
@@ -801,7 +802,7 @@
           <div
             class="absolute -right-4 -bottom-4 text-emerald-400/20 group-hover:text-emerald-400/30 transition-colors"
           >
-            <Leaf size={80} strokeWidth={1} />
+            <Flower size={80} strokeWidth={1} />
           </div>
           <p
             class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1"

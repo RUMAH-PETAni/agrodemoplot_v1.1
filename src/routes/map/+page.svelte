@@ -8,10 +8,12 @@
     Navigation,
     CircleDotDashed,
     Leaf,
+    Flower,
     FlaskConical,
     Search,
     MapPin,
     Sprout,
+    Trees,
     Mountain,
     Info,
     ArrowLeft,
@@ -261,23 +263,38 @@
       }
     });
 
-    // Render Monitoring Markers (Sprout)
+    // Render Monitoring Markers (Sprout/Trees/Leaf)
     console.log("Rendering Monitoring Markers:", monitoringData.length);
     monitoringData.forEach((m) => {
       if (!m.latitude || !m.longitude) return;
 
-      // Render the Sprout icon to a temporary container to get its HTML
+      // Kategori tanaman: tanaman utama -> Sprout, pohon penaung -> Trees, tanaman lainnya -> Leaf
+      let IconComponent = Sprout;
+      let colorClass = "emerald"; // Default
+
+      if (m.kategori_tanaman === "pohon penaung") {
+        IconComponent = Trees;
+        colorClass = "indigo";
+      } else if (m.kategori_tanaman === "tanaman lainnya") {
+        IconComponent = Leaf;
+        colorClass = "teal";
+      }
+
       const iconContainer = document.createElement("div");
-      mount(Sprout, {
+      mount(IconComponent, {
         target: iconContainer,
         props: { size: 18, strokeWidth: 2.5 },
       });
 
+      const pulseColor = colorClass === "emerald" ? "bg-emerald-500/20" : colorClass === "indigo" ? "bg-indigo-500/20" : "bg-teal-500/20";
+      const borderColor = colorClass === "emerald" ? "border-emerald-500" : colorClass === "indigo" ? "border-indigo-500" : "border-teal-500";
+      const textColor = colorClass === "emerald" ? "text-emerald-700" : colorClass === "indigo" ? "text-indigo-700" : "text-teal-700";
+
       const icon = L.divIcon({
         className: "custom-icon-marker",
         html: `<div class="marker-container group">
-                <div class="marker-pulse bg-emerald-500/20"></div>
-                <div class="w-10 h-10 bg-white border-2 border-emerald-500 rounded-full flex items-center justify-center text-emerald-700 shadow-lg transition-transform hover:scale-125 relative z-10">
+                <div class="marker-pulse ${pulseColor}"></div>
+                <div class="w-10 h-10 bg-white border-2 ${borderColor} rounded-full flex items-center justify-center ${textColor} shadow-lg transition-transform hover:scale-125 relative z-10">
                   ${iconContainer.innerHTML}
                 </div>
               </div>`,
@@ -289,27 +306,36 @@
         icon,
         zIndexOffset: 500, // Below farmers
       }).addTo(map).bindPopup(`
-          <div class="p-2">
-            <h4 class="font-black text-[10px] uppercase text-emerald-600 mb-1">Monitoring Tanaman</h4>
-            <p class="text-xs font-bold">${m.kode_tanaman || "Tanaman"}</p>
-            <p class="text-[10px] text-slate-500">${m.kondisi_pertumbuhan || "-"}</p>
+          <div class="p-4 min-w-[160px]">
+            <p class="text-[9px] font-black ${textColor} uppercase tracking-widest mb-1">${m.kategori_tanaman || "tanaman utama"}</p>
+            <h3 class="font-black text-slate-800 uppercase text-sm leading-tight mb-2">${m.jenis_tanaman || "Tanaman"}</h3>
+            <div class="flex items-center gap-2 mb-3">
+               <div class="w-6 h-6 rounded-lg bg-muted flex items-center justify-center text-slate-400">
+                  <span class="text-[10px] font-bold text-slate-500">ID</span>
+               </div>
+               <p class="text-[10px] font-bold text-slate-600">${m.kode_tanaman || "-"}</p>
+            </div>
+            <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
+              <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Kondisi</span>
+              <span class="px-2 py-0.5 bg-emerald-50 text-[8px] font-black text-emerald-600 rounded-full uppercase tracking-tighter">${m.kondisi_pertumbuhan || "Normal"}</span>
+            </div>
           </div>
         `);
     });
 
-    // Render HPG Markers (Bug/ShieldAlert/Leaf)
+    // Render HPG Markers (Bug/ShieldAlert/Flower)
     hpgData.forEach((h) => {
       if (!h.latitude || !h.longitude) return;
 
       // Differentiate icon & styling based on HPG category
       let IconComponent = Bug;
       let colorClass = "rose"; // Default
-      
+
       if (h.kategori_gangguan === "penyakit") {
         IconComponent = ShieldAlert;
         colorClass = "amber";
       } else if (h.kategori_gangguan === "gulma") {
-        IconComponent = Leaf;
+        IconComponent = Flower;
         colorClass = "green";
       } else if (h.kategori_gangguan === "hama") {
         IconComponent = Bug;
@@ -322,10 +348,30 @@
         props: { size: 18, strokeWidth: 2.5 },
       });
 
-      const pulseColor = colorClass === "rose" ? "bg-rose-500/20" : colorClass === "amber" ? "bg-amber-500/20" : "bg-emerald-500/20";
-      const borderColor = colorClass === "rose" ? "border-rose-500" : colorClass === "amber" ? "border-amber-500" : "border-emerald-500";
-      const textColor = colorClass === "rose" ? "text-rose-700" : colorClass === "amber" ? "text-amber-700" : "text-emerald-700";
-      const popupTextHeaderColor = colorClass === "rose" ? "text-rose-600" : colorClass === "amber" ? "text-amber-600" : "text-emerald-600";
+      const pulseColor =
+        colorClass === "rose"
+          ? "bg-rose-500/20"
+          : colorClass === "amber"
+            ? "bg-amber-500/20"
+            : "bg-emerald-500/20";
+      const borderColor =
+        colorClass === "rose"
+          ? "border-rose-500"
+          : colorClass === "amber"
+            ? "border-amber-500"
+            : "border-emerald-500";
+      const textColor =
+        colorClass === "rose"
+          ? "text-rose-700"
+          : colorClass === "amber"
+            ? "text-amber-700"
+            : "text-emerald-700";
+      const popupTextHeaderColor =
+        colorClass === "rose"
+          ? "text-rose-600"
+          : colorClass === "amber"
+            ? "text-amber-600"
+            : "text-emerald-600";
 
       const icon = L.divIcon({
         className: "custom-icon-marker",

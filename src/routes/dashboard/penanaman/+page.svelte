@@ -12,6 +12,7 @@
   import type { Demoplot } from "../../../types/demoplot";
   import {
     Sprout,
+    Leaf,
     Plus,
     Calendar,
     Ruler,
@@ -636,18 +637,33 @@
     const markers: any[] = [];
     latestStatusRecords.forEach((r) => {
       if (r.latitude && r.longitude) {
-        // Render the Sprout icon to a temporary container to get its HTML
+        // Kategori tanaman: tanaman utama -> Sprout, pohon penaung -> Trees, tanaman lainnya -> Leaf
+        let IconComponent = Sprout;
+        let colorClass = "emerald"; // Default
+
+        if (r.kategori_tanaman === "pohon penaung") {
+          IconComponent = Trees;
+          colorClass = "indigo";
+        } else if (r.kategori_tanaman === "tanaman lainnya") {
+          IconComponent = Leaf;
+          colorClass = "teal";
+        }
+
         const iconContainer = document.createElement("div");
-        mount(Sprout, {
+        mount(IconComponent, {
           target: iconContainer,
           props: { size: 18, strokeWidth: 2.5 },
         });
 
+        const pulseColor = colorClass === "emerald" ? "bg-emerald-500/20" : colorClass === "indigo" ? "bg-indigo-500/20" : "bg-teal-500/20";
+        const borderColor = colorClass === "emerald" ? "border-emerald-500" : colorClass === "indigo" ? "border-indigo-500" : "border-teal-500";
+        const textColor = colorClass === "emerald" ? "text-emerald-700" : colorClass === "indigo" ? "text-indigo-700" : "text-teal-700";
+
         const icon = L.divIcon({
           className: "custom-icon-marker",
           html: `<div class="marker-container group">
-                  <div class="marker-pulse bg-emerald-500/20"></div>
-                  <div class="w-10 h-10 bg-white border-2 border-emerald-500 rounded-full flex items-center justify-center text-emerald-700 shadow-lg transition-transform hover:scale-125 relative z-10">
+                  <div class="marker-pulse ${pulseColor}"></div>
+                  <div class="w-10 h-10 bg-white border-2 ${borderColor} rounded-full flex items-center justify-center ${textColor} shadow-lg transition-transform hover:scale-125 relative z-10">
                     ${iconContainer.innerHTML}
                   </div>
                 </div>`,
@@ -807,7 +823,7 @@
           <div
             class="absolute -right-4 -bottom-4 text-emerald-400/20 group-hover:text-emerald-400/30 transition-colors"
           >
-            <Smile size={100} strokeWidth={1} />
+            <Sprout size={100} strokeWidth={1} />
           </div>
           <p
             class="text-[9px] font-black text-emerald-200/40 uppercase tracking-[0.2em] mb-1"

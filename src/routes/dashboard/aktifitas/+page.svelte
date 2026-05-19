@@ -1213,7 +1213,7 @@
         </div>
         <button
           onclick={() => (showTimelineDrawer = false)}
-           class="p-3 bg-white border border-border rounded-2xl hover:bg-red-50 hover:text-red-500 transition-all"
+          class="p-3 bg-white border border-border rounded-2xl hover:bg-red-50 hover:text-red-500 transition-all"
           ><X size={24} /></button
         >
       </div>
@@ -1333,16 +1333,3 @@
     </div>
   </div>
 {/if}
-
-<style>
-  .custom-scrollbar::-webkit-scrollbar {
-    width: 4px;
-  }
-  .custom-scrollbar::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: rgba(0, 0, 0, 0.1);
-    border-radius: 10px;
-  }
-</style>

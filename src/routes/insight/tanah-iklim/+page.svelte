@@ -78,6 +78,59 @@
   let tempCanvas = $state<HTMLCanvasElement>();
   let syncing = $state(false);
 
+  // Weather Forecast (Open-Meteo) State
+  let forecastData = $state<any[]>([]);
+  let forecastLoading = $state(false);
+  let forecastError = $state("");
+
+  function getWeatherInfo(code: number) {
+    if (code === 0) return { label: "Cerah", class: "text-amber-500", icon: Sun };
+    if (code >= 1 && code <= 3) return { label: "Berawan", class: "text-blue-400", icon: Droplets };
+    if (code === 45 || code === 48) return { label: "Berkabut", class: "text-slate-400", icon: Wind };
+    if (code >= 51 && code <= 55) return { label: "Gerimis", class: "text-blue-300", icon: CloudRain };
+    if (code >= 61 && code <= 65) return { label: "Hujan", class: "text-blue-500", icon: CloudRain };
+    if (code >= 80 && code <= 82) return { label: "Hujan Deras", class: "text-blue-600", icon: CloudRain };
+    if (code >= 95 && code <= 99) return { label: "Badai Petir", class: "text-rose-500", icon: AlertCircle };
+    return { label: "Berawan", class: "text-blue-400", icon: Droplets };
+  }
+
+  async function loadForecast(latitude: number, longitude: number) {
+    forecastLoading = true;
+    forecastError = "";
+    try {
+      const res = await fetch(
+        `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,wind_speed_10m_max&timezone=auto`
+      );
+      if (!res.ok) throw new Error("Gagal mengambil data prakiraan cuaca");
+      const data = await res.json();
+      
+      if (data && data.daily) {
+        const daily = data.daily;
+        const formatted = daily.time.map((timeStr: string, idx: number) => {
+          const date = new Date(timeStr);
+          const dayName = date.toLocaleDateString("id-ID", { weekday: "long" });
+          const dateFormatted = date.toLocaleDateString("id-ID", { day: "numeric", month: "short" });
+          
+          return {
+            dateStr: `${dayName}`,
+            dateNum: `${dateFormatted}`,
+            weatherCode: daily.weather_code[idx],
+            tempMax: daily.temperature_2m_max[idx],
+            tempMin: daily.temperature_2m_min[idx],
+            precipitation: daily.precipitation_sum[idx],
+            windSpeed: daily.wind_speed_10m_max[idx]
+          };
+        });
+        forecastData = formatted;
+      }
+    } catch (e: any) {
+      forecastError = e.message;
+      forecastData = [];
+    } finally {
+      forecastLoading = false;
+    }
+  }
+
   onMount(async () => {
     try {
       demoplots = await getDemoplotList();
@@ -110,6 +163,12 @@
       soilDetails = sd;
       climateSummary = cs;
       climateMonths = cm;
+
+      if (selectedDemoplot && selectedDemoplot.latitude && selectedDemoplot.longitude) {
+        await loadForecast(selectedDemoplot.latitude, selectedDemoplot.longitude);
+      } else {
+        forecastData = [];
+      }
     } catch (e: any) {
       error = e.message;
     } finally {
@@ -972,6 +1031,126 @@
         </div>
       </section>
 
+      <!-- Section: Prakiraan Cuaca 7 Hari Kedepan (Open-Meteo) -->
+      <section class="space-y-8 pt-8">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <div
+              class="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500"
+            >
+              <Sun class="animate-spin-slow" size={24} />
+            </div>
+            <div>
+              <h2
+                class="text-2xl font-black text-foreground uppercase tracking-tight"
+              >
+                Prakiraan Cuaca 7 Hari Kedepan
+              </h2>
+              <p class="text-sm text-muted-foreground font-medium">
+                Prakiraan mikroklimatologis real-time dari satelit Open-Meteo untuk lokasi demoplot.
+              </p>
+            </div>
+          </div>
+          {#if selectedDemoplot?.latitude && selectedDemoplot?.longitude}
+            <button
+              onclick={() => loadForecast(selectedDemoplot!.latitude!, selectedDemoplot!.longitude!)}
+              class="flex items-center gap-2 px-4 py-2 bg-muted hover:bg-muted/80 rounded-xl text-[10px] font-black uppercase tracking-widest text-muted-foreground transition-all active:scale-95"
+            >
+              {#if forecastLoading}
+                <Loader2 class="w-3.5 h-3.5 animate-spin" />
+                Updating...
+              {:else}
+                Sync Live
+              {/if}
+            </button>
+          {/if}
+        </div>
+
+        {#if !selectedDemoplot?.latitude || !selectedDemoplot?.longitude}
+          <!-- No Geotagging Warning -->
+          <div
+            class="bg-rose-500/5 dark:bg-rose-500/10 border border-dashed border-rose-500/20 rounded-[2.5rem] p-10 text-center flex flex-col items-center justify-center gap-4"
+          >
+            <div class="w-16 h-16 bg-rose-500/15 text-rose-500 rounded-3xl flex items-center justify-center shadow-lg border border-rose-500/20">
+              <AlertCircle size={32} />
+            </div>
+            <div class="space-y-2">
+              <h3 class="text-lg font-black uppercase text-rose-700 dark:text-rose-400">Koordinat Spasial Tidak Tersedia</h3>
+              <p class="text-xs text-muted-foreground max-w-lg mx-auto font-medium leading-relaxed">
+                Prakiraan cuaca mikroklimatologis presisi tinggi memerlukan koordinat spasial (Latitude & Longitude) yang valid pada demoplot terpilih. Harap lengkapi geotagging koordinat terlebih dahulu melalui menu kelola Kebun.
+              </p>
+            </div>
+          </div>
+        {:else if forecastLoading}
+          <!-- Loading Forecast Skeletons -->
+          <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
+            {#each Array(7) as _}
+              <div class="bg-card/40 border border-border rounded-3xl p-5 space-y-4 animate-pulse">
+                <div class="h-3 bg-muted rounded-full w-2/3"></div>
+                <div class="h-10 w-10 bg-muted rounded-2xl mx-auto"></div>
+                <div class="h-3 bg-muted rounded-full w-1/2 mx-auto"></div>
+                <div class="h-4 bg-muted rounded-full w-3/4 mx-auto"></div>
+              </div>
+            {/each}
+          </div>
+        {:else if forecastError}
+          <!-- Error Loading -->
+          <div class="p-8 text-center bg-rose-500/10 border border-rose-500/20 rounded-3xl text-rose-600 text-xs font-black uppercase tracking-wider">
+            {forecastError}
+          </div>
+        {:else if forecastData.length > 0}
+          <!-- 7-Day Forecast Grid -->
+          <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
+            {#each forecastData as day}
+              {@const wInfo = getWeatherInfo(day.weatherCode)}
+              <div
+                class="group relative bg-card/60 backdrop-blur-3xl border border-border rounded-3xl p-5 flex flex-col items-center justify-between text-center transition-all hover:border-emerald-500/30 hover:-translate-y-1 shadow-lg overflow-hidden"
+              >
+                <!-- Day Header -->
+                <div class="space-y-1 w-full">
+                  <span class="text-xs font-black text-slate-800 dark:text-slate-100 uppercase tracking-wide block truncate">
+                    {day.dateStr}
+                  </span>
+                  <span class="text-[9px] font-black text-slate-450 dark:text-slate-500 tracking-widest block uppercase">
+                    {day.dateNum}
+                  </span>
+                </div>
+
+                <!-- Mapped Weather Icon & Label -->
+                <div class="my-5 flex flex-col items-center gap-2">
+                  <div class="p-3 bg-white/5 dark:bg-white/10 rounded-2xl transition-transform group-hover:scale-110 shadow-inner">
+                    <svelte:component this={wInfo.icon} class="w-8 h-8 {wInfo.class}" />
+                  </div>
+                  <span class="text-[10px] font-black uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                    {wInfo.label}
+                  </span>
+                </div>
+
+                <!-- Temperature Range & Extras -->
+                <div class="w-full space-y-3 pt-3 border-t border-border/50">
+                  <div class="flex items-baseline justify-center gap-1.5">
+                    <span class="text-sm font-black text-slate-800 dark:text-slate-100">{Math.round(day.tempMax)}°</span>
+                    <span class="text-[10px] font-semibold text-slate-400">/</span>
+                    <span class="text-xs font-bold text-slate-400">{Math.round(day.tempMin)}°</span>
+                  </div>
+
+                  <div class="flex justify-around text-[9px] font-bold text-slate-450">
+                    <div class="flex items-center gap-1" title="Curah Hujan">
+                      <CloudRain size={10} class="text-blue-400" />
+                      <span>{day.precipitation}mm</span>
+                    </div>
+                    <div class="flex items-center gap-1" title="Kecepatan Angin">
+                      <Wind size={10} class="text-teal-400" />
+                      <span>{Math.round(day.windSpeed)}k/h</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            {/each}
+          </div>
+        {/if}
+      </section>
+
       <!-- Section 3: Data Methodology & Sources -->
       <section class="space-y-8 pt-8">
         <div class="flex items-center gap-4">
@@ -1107,5 +1286,18 @@
   /* Shimmer for progress bars */
   .transition-all {
     transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  @keyframes spin-slow {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  :global(.animate-spin-slow) {
+    animation: spin-slow 15s linear infinite;
   }
 </style>

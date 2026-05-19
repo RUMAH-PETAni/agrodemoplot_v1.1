@@ -10,6 +10,7 @@
     Map,
     Trees,
     GraduationCap,
+    FileChartPie,
     Lightbulb,
     Sparkles,
     PackageOpen,
@@ -156,9 +157,9 @@
         >
           <!-- Large Decorative Background Icon -->
           <div
-            class="absolute lg:-right-12 -top-12 text-blue-400/10 group-hover:text-blue-400/20 transition-all duration-700 blur-[1px]"
+            class="absolute lg:-right-12 text-blue-400/10 group-hover:text-blue-400/20 transition-all duration-700 blur-[1px]"
           >
-            <PackageOpen size={300} strokeWidth={1} />
+            <Sparkles size={300} strokeWidth={1} />
           </div>
         </div>
       </div>

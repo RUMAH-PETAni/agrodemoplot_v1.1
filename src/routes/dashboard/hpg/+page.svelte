@@ -30,6 +30,8 @@
     X,
     ArrowUpRight,
     LandPlot,
+    Home,
+    LocateFixed,
     Image as ImageIcon,
     ShieldAlert,
     Shovel,
@@ -149,6 +151,43 @@
   let tileLayer: any = null;
   let rasterLayer: any = null;
   let L: any;
+
+  let mapMarkers: any[] = [];
+  let mapPolygons: any[] = [];
+
+  function zoomToAll() {
+    if (!leafletMap || (mapMarkers.length === 0 && mapPolygons.length === 0)) return;
+    const group = L.featureGroup([...mapMarkers, ...mapPolygons]);
+    leafletMap.fitBounds(group.getBounds().pad(0.1));
+  }
+
+  function getCurrentLocation() {
+    if (!leafletMap) return;
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          leafletMap.flyTo([latitude, longitude], 16, { duration: 1.5 });
+
+          L.circleMarker([latitude, longitude], {
+            radius: 8,
+            fillColor: "#3b82f6",
+            color: "#fff",
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.8,
+          })
+            .addTo(leafletMap)
+            .bindPopup("Lokasi Anda")
+            .openPopup();
+        },
+        (err) => {
+          console.error("Geolocation error:", err);
+          error = "Gagal mengambil lokasi: " + err.message;
+        }
+      );
+    }
+  }
   let focusRecord = $state<MonitoringHPG | null>(null);
 
   let currentBaseMap = $state("esri");
@@ -544,6 +583,7 @@
     }
 
     // Polygon layers
+    const polygonLayers: any[] = [];
     const demoplotsToDraw = focusRecord
       ? demoplots.filter((dp) => dp.id === focusRecord?.demoplot_id)
       : demoplots;
@@ -554,7 +594,7 @@
             typeof dp.polygon === "string"
               ? JSON.parse(dp.polygon)
               : dp.polygon;
-          L.geoJSON(geojsonData, {
+          const layer = L.geoJSON(geojsonData, {
             style: {
               color: "#ef4444",
               weight: 2,
@@ -563,6 +603,7 @@
               fillOpacity: 0.15,
             },
           }).addTo(leafletMap);
+          polygonLayers.push(layer);
         } catch (e) {
           console.error("Error parsing polygon", e);
         }
@@ -634,10 +675,12 @@
 
     if (focusRecord && focusRecord.latitude && focusRecord.longitude) {
       leafletMap.setView([focusRecord.latitude, focusRecord.longitude], 18);
-    } else if (markers.length > 0) {
-      const group = L.featureGroup(markers);
+    } else if (markers.length > 0 || polygonLayers.length > 0) {
+      const group = L.featureGroup([...markers, ...polygonLayers]);
       leafletMap.fitBounds(group.getBounds().pad(0.1));
     }
+    mapMarkers = markers;
+    mapPolygons = polygonLayers;
   }
 
   function openMapForRecord(record: MonitoringHPG) {
@@ -1711,6 +1754,27 @@
                 </div>
               {/if}
             </div>
+          </div>
+
+          <!-- Navigation Controls (Home and Geolocate) -->
+          <div class="absolute right-6 bottom-6 z-[1000] flex flex-col gap-3">
+            <button
+              onclick={zoomToAll}
+              class="w-12 h-12 bg-slate-900/60 backdrop-blur-3xl border border-white/20 rounded-2xl flex items-center justify-center text-white hover:bg-white/30 transition-all active:scale-95 shadow-2xl group"
+              title="Zoom ke Semua Plot"
+            >
+              <Home size={20} class="group-hover:text-emerald-400 transition-colors" />
+            </button>
+            <button
+              onclick={getCurrentLocation}
+              class="w-12 h-12 bg-slate-900/60 backdrop-blur-3xl border border-white/20 rounded-2xl flex items-center justify-center text-white hover:bg-white/30 transition-all active:scale-95 shadow-2xl group"
+              title="Cari Lokasi Saya"
+            >
+              <LocateFixed
+                size={20}
+                class="group-hover:text-blue-400 transition-colors"
+              />
+            </button>
           </div>
         </div>
       </div>

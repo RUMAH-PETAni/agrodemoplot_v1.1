@@ -41,6 +41,8 @@
     ArrowLeft,
     CheckCircle2,
     AlertTriangle,
+    Home,
+    LocateFixed,
   } from "@lucide/svelte";
   import {
     getKarakteristikLahanByDemoplotId,
@@ -280,6 +282,43 @@
   let mapContainer: HTMLDivElement;
   let map: any = null;
   let tileLayer: any = null;
+
+  function zoomToAll() {
+    if (!map || !selectedDemoplot) return;
+    if (polygon) {
+      map.fitBounds(polygon.getBounds(), { padding: [50, 50] });
+    } else if (selectedDemoplot.latitude && selectedDemoplot.longitude) {
+      map.setView([selectedDemoplot.latitude, selectedDemoplot.longitude], 18);
+    }
+  }
+
+  function getCurrentLocation() {
+    if (!map) return;
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          map.flyTo([latitude, longitude], 16, { duration: 1.5 });
+
+          L.circleMarker([latitude, longitude], {
+            radius: 8,
+            fillColor: "#3b82f6",
+            color: "#fff",
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.8,
+          })
+            .addTo(map)
+            .bindPopup("Lokasi Anda")
+            .openPopup();
+        },
+        (err) => {
+          console.error("Geolocation error:", err);
+          error = "Gagal mengambil lokasi: " + err.message;
+        }
+      );
+    }
+  }
 
   // Form Fields (Demoplot)
   let formNamaDemoplot = $state("");
@@ -1749,6 +1788,27 @@
               </div>
             {/if}
           </div>
+        </div>
+
+        <!-- Navigation Controls (Home and Geolocate) -->
+        <div class="absolute right-6 bottom-6 z-[1000] flex flex-col gap-3">
+          <button
+            onclick={zoomToAll}
+            class="w-12 h-12 bg-slate-900/60 backdrop-blur-3xl border border-white/20 rounded-2xl flex items-center justify-center text-white hover:bg-white/30 transition-all active:scale-95 shadow-2xl group"
+            title="Zoom ke Demoplot"
+          >
+            <Home size={20} class="group-hover:text-emerald-400 transition-colors" />
+          </button>
+          <button
+            onclick={getCurrentLocation}
+            class="w-12 h-12 bg-slate-900/60 backdrop-blur-3xl border border-white/20 rounded-2xl flex items-center justify-center text-white hover:bg-white/30 transition-all active:scale-95 shadow-2xl group"
+            title="Cari Lokasi Saya"
+          >
+            <LocateFixed
+              size={20}
+              class="group-hover:text-blue-400 transition-colors"
+            />
+          </button>
         </div>
       </div>
     </div>

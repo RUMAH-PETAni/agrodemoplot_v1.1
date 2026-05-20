@@ -14,6 +14,7 @@
     Settings,
     Bell,
     AlertCircle,
+    Sparkles,
   } from "@lucide/svelte";
   import { fade, fly, scale } from "svelte/transition";
 
@@ -62,7 +63,6 @@
       // Initialize nav height
       document.documentElement.style.setProperty("--nav-height", "5rem");
 
-
       const handleClickOutside = (event: MouseEvent) => {
         if (showDropdown) {
           const dropdown = document.querySelector(".dropdown-container");
@@ -71,8 +71,13 @@
           }
         }
         if (showNotifications) {
-          const notifContainer = document.querySelector(".notification-container");
-          if (notifContainer && !notifContainer.contains(event.target as Node)) {
+          const notifContainer = document.querySelector(
+            ".notification-container",
+          );
+          if (
+            notifContainer &&
+            !notifContainer.contains(event.target as Node)
+          ) {
             showNotifications = false;
           }
         }
@@ -168,22 +173,43 @@
               in:fly={{ y: 10, duration: 200 }}
               out:fade={{ duration: 150 }}
             >
-              <div class="flex items-center justify-between pb-2 border-b border-border/50">
-                <span class="text-xs font-black uppercase tracking-wider text-foreground">Notifikasi</span>
-                <span class="px-2 py-0.5 bg-amber-500/10 text-amber-600 text-[8px] font-black uppercase tracking-widest rounded-full">1 Baru</span>
+              <div
+                class="flex items-center justify-between pb-2 border-b border-border/50"
+              >
+                <span
+                  class="text-xs font-black uppercase tracking-wider text-foreground"
+                  >Notifikasi</span
+                >
+                <span
+                  class="px-2 py-0.5 bg-emerald-500/10 text-emerald-600 text-[8px] font-black uppercase tracking-widest rounded-full animate-pulse"
+                  >1 Baru</span
+                >
               </div>
 
               <div class="space-y-3">
-                <div class="p-3 bg-amber-500/5 dark:bg-amber-500/10 border border-amber-500/20 rounded-2xl flex items-start gap-3">
-                  <div class="p-2 bg-amber-500/20 text-amber-600 rounded-xl shrink-0">
-                    <AlertCircle size={16} />
+                <div
+                  class="p-3 bg-emerald-500/5 dark:bg-emerald-500/10 border border-emerald-500/20 rounded-2xl flex items-start gap-3"
+                >
+                  <div
+                    class="p-2 bg-emerald-500/20 text-emerald-600 rounded-xl shrink-0"
+                  >
+                    <Sparkles size={16} />
                   </div>
                   <div class="space-y-1">
-                    <h4 class="text-xs font-black text-amber-800 dark:text-amber-300 uppercase tracking-wide">AI-Gronomis Nonaktif</h4>
-                    <p class="text-[11px] text-muted-foreground leading-normal font-medium">
-                      Fitur chat AI-Gronomis saat ini belum berfungsi sementara waktu karena masalah koneksi provider.
+                    <h4
+                      class="text-xs font-black text-emerald-800 dark:text-emerald-300 uppercase tracking-wide"
+                    >
+                      AI-Gronomis Aktif
+                    </h4>
+                    <p
+                      class="text-[11px] text-muted-foreground leading-normal font-medium"
+                    >
+                      Fitur chat AI-Gronomis kini berfungsi normal kembali.
+                      Silakan tanyakan seputar agroforestri &amp; lahan Anda!
                     </p>
-                    <span class="text-[8px] text-slate-400 font-bold block pt-1">Baru Saja</span>
+                    <span class="text-[8px] text-slate-400 font-bold block pt-1"
+                      >Baru Saja</span
+                    >
                   </div>
                 </div>
               </div>

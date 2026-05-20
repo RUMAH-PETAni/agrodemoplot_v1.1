@@ -340,6 +340,11 @@
           {/if}
         </button>
       </div>
+
+      <!-- Disclaimer Text -->
+      <p class="text-[10px] text-muted-foreground/50 text-center mt-3 font-medium">
+        AI dapat membuat kesalahan, berikan pertanyaan yang spesifik untuk jawaban yang terbaik.
+      </p>
     </div>
   </div>
 

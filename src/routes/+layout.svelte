@@ -46,6 +46,19 @@
     }
   }
   let isMapPage = $derived($page.url.pathname === '/map');
+
+  // Lock background scroll (both html and body) when drawer is open
+  $effect(() => {
+    if (typeof document !== 'undefined') {
+      if (showAIDrawer) {
+        document.body.classList.add('overflow-hidden');
+        document.documentElement.classList.add('overflow-hidden');
+      } else {
+        document.body.classList.remove('overflow-hidden');
+        document.documentElement.classList.remove('overflow-hidden');
+      }
+    }
+  });
 </script>
 
 <div class="min-h-screen flex flex-col bg-background relative {(isLandingPage || isMapPage) ? 'overflow-hidden' : ''}">
@@ -105,5 +118,10 @@
   :global(body) {
     margin: 0;
     padding: 0;
+  }
+
+  :global(body.overflow-hidden), :global(html.overflow-hidden) {
+    overflow: hidden !important;
+    height: 100vh !important;
   }
 </style>

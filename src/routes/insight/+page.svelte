@@ -50,6 +50,14 @@
 
   const insightItems = [
     {
+      name: "Modul Edukasi",
+      desc: "Materi sekolah lapangan & pelatihan pertanian berkelanjutan.",
+      icon: GraduationCap,
+      img: menu2Img,
+      active: true,
+      href: "/insight/modul_edukasi",
+    },
+    {
       name: "Tanah & Iklim",
       desc: "Informasi tanah & iklim berdasarkan sumber data terbuka ",
       icon: Mountain,
@@ -64,13 +72,7 @@
       img: menu1Img,
       active: false,
     },
-    {
-      name: "Rekomendasi Teknis",
-      desc: "Saran praktik budidaya terbaik dari ahli agronomis/akademisi.",
-      icon: Lightbulb,
-      img: menu3Img,
-      active: false,
-    },
+
     {
       name: "Produktivitas",
       desc: "Analisis produktivitas kebun & efisiensi pengelolaan lahan.",
@@ -86,10 +88,10 @@
       active: false,
     },
     {
-      name: "Modul Edukasi",
-      desc: "Materi sekolah lapangan & pelatihan pertanian berkelanjutan.",
-      icon: GraduationCap,
-      img: menu2Img,
+      name: "Rekomendasi Teknis",
+      desc: "Saran praktik budidaya terbaik dari ahli agronomis/akademisi.",
+      icon: Lightbulb,
+      img: menu3Img,
       active: false,
     },
   ];
@@ -229,7 +231,10 @@
                 <span
                   class="text-[10px] font-black uppercase tracking-widest flex items-center gap-2"
                 >
-                  Buka Analisis <ArrowRight size={14} />
+                  {item.name === "Modul Edukasi"
+                    ? "Buka Modul"
+                    : "Buka Analisis"}
+                  <ArrowRight size={14} />
                 </span>
               </a>
             {:else}

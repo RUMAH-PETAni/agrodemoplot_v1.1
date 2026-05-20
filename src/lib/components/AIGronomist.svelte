@@ -33,27 +33,12 @@
   let isLoading = $state(false);
   let error = $state<string | null>(null);
   let isLoggedIn = $state(false);
+  let userId = $state("");
 
   // Reference to the messages container for scrolling
   let messagesContainer = $state<HTMLDivElement | null>(null);
 
-  // Initialize with a welcome message and check login status
-  onMount(() => {
-    const updateLoginStatus = () => {
-      const authKey = Object.keys(localStorage).find(
-        (key) => key.includes("sb-") && key.includes("-auth-token"),
-      );
-      if (authKey) {
-        const session = localStorage.getItem(authKey);
-        isLoggedIn = !!session && session !== "null";
-      } else {
-        isLoggedIn = false;
-      }
-    };
-
-    updateLoginStatus();
-    window.addEventListener("storage", updateLoginStatus);
-
+  function loadDefaultWelcome() {
     messages = [
       {
         id: "1",
@@ -63,8 +48,66 @@
         timestamp: new Date(),
       },
     ];
+  }
+
+  // Initialize with a welcome message and check login status
+  onMount(() => {
+    const updateLoginStatus = () => {
+      const authKey = Object.keys(localStorage).find(
+        (key) => key.includes("sb-") && key.includes("-auth-token"),
+      );
+      if (authKey) {
+        const sessionStr = localStorage.getItem(authKey);
+        if (sessionStr && sessionStr !== "null") {
+          try {
+            const session = JSON.parse(sessionStr);
+            userId = session.user?.id || "";
+            isLoggedIn = true;
+          } catch (e) {
+            isLoggedIn = true;
+            userId = "";
+          }
+        } else {
+          isLoggedIn = false;
+          userId = "";
+        }
+      } else {
+        isLoggedIn = false;
+        userId = "";
+      }
+
+      // Load saved messages for the current user if logged in
+      if (isLoggedIn && userId) {
+        const saved = localStorage.getItem(`ai-gronomist-chat-${userId}`);
+        if (saved) {
+          try {
+            const parsed = JSON.parse(saved);
+            messages = parsed.map((msg: any) => ({
+              ...msg,
+              timestamp: new Date(msg.timestamp)
+            }));
+          } catch (e) {
+            loadDefaultWelcome();
+          }
+        } else {
+          loadDefaultWelcome();
+        }
+      } else {
+        loadDefaultWelcome();
+      }
+    };
+
+    updateLoginStatus();
+    window.addEventListener("storage", updateLoginStatus);
 
     return () => window.removeEventListener("storage", updateLoginStatus);
+  });
+
+  // Save chat history to localStorage when messages change
+  $effect(() => {
+    if (isLoggedIn && userId && messages.length > 0) {
+      localStorage.setItem(`ai-gronomist-chat-${userId}`, JSON.stringify(messages));
+    }
   });
 
   // Auto-scroll to bottom whenever messages change
@@ -148,7 +191,10 @@
   }
 
   function clearChat() {
-    messages = [messages[0]];
+    loadDefaultWelcome();
+    if (userId) {
+      localStorage.removeItem(`ai-gronomist-chat-${userId}`);
+    }
     input = "";
   }
 

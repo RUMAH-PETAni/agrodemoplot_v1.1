@@ -63,18 +63,6 @@ export const POST: RequestHandler = async ({ request }) => {
         sys: true
       },
       {
-        url: `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${geminiKey}`,
-        sys: true
-      },
-      {
-        url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`,
-        sys: true
-      },
-      {
-        url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${geminiKey}`,
-        sys: true
-      },
-      {
         url: `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${geminiKey}`,
         sys: false
       },
@@ -135,7 +123,57 @@ export const POST: RequestHandler = async ({ request }) => {
       }
     }
 
-    throw new Error(`Semua konfigurasi API Gemini gagal. Error terakhir: ${lastError}`);
+    // If all Gemini configurations fail, try OpenRouter fallback system with free models
+    if (env.OPENROUTER_API_KEY) {
+      console.warn(`Gemini failed. Initiating OpenRouter fallback...`);
+      const openrouterModels = [
+        "openai/gpt-oss-120b:free",
+        "deepseek/deepseek-v4-flash:free",
+        "google/gemma-3-27b-it:free"
+      ];
+      
+      for (const model of openrouterModels) {
+        try {
+          const openrouterResponse = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+            method: "POST",
+            headers: {
+              "Authorization": `Bearer ${env.OPENROUTER_API_KEY}`,
+              "Content-Type": "application/json",
+              "HTTP-Referer": "https://agrodemoplot.id",
+              "X-Title": "Agrodemoplot AI-Gronomis"
+            },
+            body: JSON.stringify({
+              model: model,
+              messages: [
+                { role: "system", content: SYSTEM_PROMPT },
+                ...messages.map((msg: any) => ({
+                  role: msg.role === 'assistant' ? 'assistant' : 'user',
+                  content: msg.content
+                }))
+              ]
+            })
+          });
+
+          if (!openrouterResponse.ok) {
+            const errData = await openrouterResponse.json().catch(() => ({}));
+            const errMsg = errData?.error?.message || `HTTP ${openrouterResponse.status}`;
+            throw new Error(errMsg);
+          }
+
+          const openrouterData = await openrouterResponse.json();
+          const openrouterContent = openrouterData?.choices?.[0]?.message?.content ?? '';
+          if (openrouterContent) {
+            console.log(`OpenRouter fallback succeeded using model: ${model}`);
+            return json({ content: openrouterContent });
+          }
+        } catch (err: any) {
+          lastError = err?.message || String(err);
+          console.warn(`OpenRouter fallback model ${model} failed:`, lastError);
+        }
+      }
+    }
+
+    throw new Error(`Semua sistem kecerdasan buatan (OpenAI, Gemini, OpenRouter) sedang tidak dapat dijangkau. Error terakhir: ${lastError}`);
   } catch (error: any) {
     const message = error?.message ?? String(error);
     console.error('Error in AI chat API:', message);

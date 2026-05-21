@@ -958,11 +958,16 @@
                   class="text-[10px] font-black uppercase tracking-widest text-muted-foreground"
                   >Pendidikan</label
                 >
-                <input
-                  type="text"
+                <select
                   bind:value={pendidikan}
-                  class="w-full bg-muted/30 border-border rounded-xl p-3 text-sm font-medium"
-                />
+                 class="w-full bg-muted/30 border-border rounded-xl p-3 text-sm font-medium"
+                >
+                <option value="">Pilih...</option>
+                  <option value="SD">SD</option>
+                  <option value="SMP">SMP</option>
+                  <option value="SMA">SMA</option>
+                  <option value="Perguruan Tinggi">Perguruan Tinggi</option>
+                </select>
               </div>
             </div>
           </div>

@@ -524,7 +524,7 @@
             <p
               class="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2"
             >
-              Total Nitrogen
+              Nitrogen
             </p>
             <div class="flex items-baseline gap-2 mb-4">
               <span class="text-5xl font-black text-foreground"

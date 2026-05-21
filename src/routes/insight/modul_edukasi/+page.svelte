@@ -215,39 +215,78 @@
 </script>
 
 <div class="min-h-screen pb-24 px-6 max-w-7xl mx-auto space-y-12">
-  <!-- Top Navigation & Title Bar -->
-  <div class="flex items-center justify-between mt-28 border-b border-border/40 pb-6" in:fly={{ y: -10, duration: 500 }}>
-    <div class="flex items-center gap-4">
-      <a
-        href="/insight"
-        class="p-3 rounded-2xl bg-card border border-border text-muted-foreground hover:text-foreground transition-all hover:border-emerald-500/30 active:scale-95 flex items-center justify-center shadow-sm"
-        title="Kembali ke Insights"
-      >
-        <ArrowLeft size={20} />
-      </a>
-      <div>
-        <div class="flex items-center gap-2 mb-1">
-          <div class="p-1 rounded-lg bg-emerald-500/10 text-emerald-500">
-            <GraduationCap size={16} />
-          </div>
-          <span class="text-[9px] font-black uppercase tracking-widest text-emerald-500">
-            Insight & Edukasi
-          </span>
-        </div>
-        <h1 class="text-3xl md:text-4xl font-black tracking-tight text-foreground uppercase">
-          Modul Edukasi
-        </h1>
-      </div>
+<!-- Hero Section (Aligned with Parent) -->
+  <section
+    class="relative mt-28 rounded-[2.5rem] bg-slate-900 overflow-hidden shadow-2xl shadow-blue-900/20 text-white"
+    in:fly={{ y: -20, duration: 800 }}
+  >
+    <!-- Deep Mesh Background -->
+    <div class="absolute inset-0 z-0 opacity-40">
+      <div
+        class="absolute -top-[20%] -left-[10%] w-[60%] h-[120%] bg-blue-600 blur-[120px] rounded-full"
+      ></div>
+      <div
+        class="absolute top-[20%] -right-[10%] w-[40%] h-[80%] bg-emerald-500/30 blur-[100px] rounded-full"
+      ></div>
     </div>
 
-    <!-- Sync Button -->
-    <button
-      onclick={fetchModules}
-      class="px-5 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-[10px] font-black uppercase tracking-widest transition-all shadow-lg shadow-emerald-600/20 flex items-center gap-2"
+    <div
+      class="relative z-10 p-10 md:p-16 grid grid-cols-1 md:grid-cols-2 items-center gap-12 md:gap-24"
     >
-      <Sparkles size={14} /> Refresh Data
-    </button>
-  </div>
+      <div class="space-y-6 text-center md:text-left flex-1">
+        <div class="flex items-center justify-center md:justify-start gap-3">
+          <a
+            href="/insight"
+            class="p-2 hover:bg-white/20 backdrop-blur-md rounded-xl transition-colors"
+          >
+            <ArrowLeft size={18} class="text-white" />
+          </a>
+          <div
+            class="inline-flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur-md rounded-full border border-white/10 text-[10px] font-black text-blue-100 uppercase tracking-widest"
+          >
+            <GraduationCap size={12} class="text-blue-400" /> Modul Edukasi
+          </div>
+        </div>
+
+        <div class="space-y-2">
+          <h1
+            class="text-4xl md:text-6xl font-black tracking-tighter leading-[0.9]"
+          >
+            Learning <span class="text-emerald-400">Media</span>
+          </h1>
+          <p
+            class="text-lg text-blue-50/70 font-medium max-w-xl mx-auto md:mx-0"
+          >
+            Kumpulan materi pembelajaran untuk praktik pertanian yang berkelanjutan.
+          </p>
+        </div>
+      </div>
+      <!-- Right Column:  -->
+      <div
+        class="relative flex items-center justify-center"
+        in:scale={{ delay: 400 }}
+      >
+        <div
+          class="flex flex-wrap items-center justify-center lg:justify-start gap-4 pt-4"
+        >
+         <!-- Sync Button -->
+          <button
+            onclick={fetchModules}
+            class="px-5 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-[10px] font-black uppercase tracking-widest transition-all shadow-lg shadow-emerald-600/20 flex items-center gap-2"
+          >
+            <Sparkles size={14} /> Refresh Data
+          </button>
+        </div>
+        <!-- Large Decorative Background Icon -->
+        <div
+          class="absolute lg:-right-12 -top-12 text-blue-400/10 group-hover:text-blue-400/20 transition-all duration-700 blur-[1px]"
+        >
+          <GraduationCap size={300} strokeWidth={1} />
+        </div>
+      </div>
+    </div>
+  </section>
+  
 
   <!-- Search and Tabs Filters Panel -->
   <div

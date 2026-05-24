@@ -135,7 +135,7 @@
           <div
             class="inline-flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur-md rounded-full border border-white/10 text-[10px] font-black text-blue-100 uppercase tracking-widest"
           >
-            <Lightbulb size={12} class="text-blue-400" /> Analitik
+            <Lightbulb size={12} class="text-blue-400" /> Wawasan
           </div>
           <div class="space-y-4">
             <h1

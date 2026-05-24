@@ -51,7 +51,7 @@
   const menuItems = $derived([
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
     { name: "Peta", href: "/map", icon: Map },
-    { name: "Analitik", href: "/insight", icon: Lightbulb },
+    { name: "Wawasan", href: "/insight", icon: Lightbulb },
     { name: "Laporan", href: "/report", icon: FileText },
     { name: "AI-Gronomis", href: "#", icon: BotMessageSquare, type: "action" },
   ]);
@@ -106,7 +106,7 @@
 
               <!-- Tooltip -->
               <div
-                class="absolute left-full ml-4 px-3 py-1.5 bg-foreground text-background text-[10px] font-black uppercase tracking-widest rounded-lg opacity-0 pointer-events-none group-hover:opacity-100 group-hover:translate-x-0 -translate-x-2 transition-all duration-200 whitespace-nowrap z-50 shadow-xl"
+                class="absolute left-full top-1/2 ml-4 -translate-y-1/2 px-3 py-1.5 bg-foreground text-background text-[10px] font-black uppercase tracking-widest rounded-lg opacity-0 pointer-events-none group-hover:opacity-100 group-hover:translate-x-0 -translate-x-2 transition-all duration-200 whitespace-nowrap z-50 shadow-xl"
               >
                 {item.name}
                 <div

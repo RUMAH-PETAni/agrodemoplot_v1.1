@@ -66,8 +66,8 @@
       href: "/insight/tanah-iklim",
     },
     {
-      name: "Kesehatan Tanaman",
-      desc: "Analisis kesehatan tanaman berdasarkan data geospasial.",
+      name: "Kesehatan Lahan",
+      desc: "Analisis kesehatan lahan kebun berdasarkan data geospasial.",
       icon: Trees,
       img: menu1Img,
       active: false,

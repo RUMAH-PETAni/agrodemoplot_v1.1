@@ -862,10 +862,7 @@
                       </p>
                     </div>
                   </div>
-                  <span
-                    class="text-[9px] font-black text-blue-600 uppercase tracking-widest"
-                    >Tahun Ini</span
-                  >
+                  
                 </div>
 
                 <!-- Humid -->
@@ -1038,7 +1035,7 @@
             <div
               class="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500"
             >
-              <Sun class="animate-spin-slow" size={24} />
+              <Sun size={24} />
             </div>
             <div>
               <h2

@@ -862,7 +862,7 @@
                       </p>
                     </div>
                   </div>
-                  
+                 
                 </div>
 
                 <!-- Humid -->
@@ -1035,7 +1035,7 @@
             <div
               class="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500"
             >
-              <Sun size={24} />
+              <Sun  size={24} />
             </div>
             <div>
               <h2

@@ -206,7 +206,7 @@
             <p
               class="text-lg text-emerald-50/70 font-medium max-w-xl mx-auto lg:mx-0"
             >
-              Mari pantau perkembangan lahan dan pengelola dalam satu antarmuka
+              Pantau perkembangan lahan dan pengelola dalam satu antarmuka
               yang terpadu.
             </p>
           </div>

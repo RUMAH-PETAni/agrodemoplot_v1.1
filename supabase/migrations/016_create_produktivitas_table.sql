@@ -26,7 +26,7 @@ CREATE TABLE produktivitas (
   -- FIX #4: hapus NOT NULL — satuan hanya relevan untuk kategori 'input'
   satuan              TEXT,         -- 'Kg', 'Liter', 'Karung'
   biaya_total         DECIMAL(12,2),
-  waktu_penggunaan    DATE          DEFAULT CURRENT_DATE,
+  waktu_penggunaan    DATE,
 
   -- ----------------------------------------------------------
   -- KATEGORI: tenaga kerja
@@ -38,7 +38,7 @@ CREATE TABLE produktivitas (
                                     -- 'panen', 'pasca panen'
   biaya_tenaga_kerja  DECIMAL(12,2) DEFAULT 0,
   jumlah_jam_kerja    DECIMAL(5,2),  -- untuk hitung efisiensi
-  tanggal_pelaksanaan DATE          DEFAULT CURRENT_DATE,
+  tanggal_pelaksanaan DATE,
 
   -- ----------------------------------------------------------
   -- KATEGORI: hasil panen
@@ -50,7 +50,7 @@ CREATE TABLE produktivitas (
   berat_basah_kg      DECIMAL(10,2),
   putaran_panen       INTEGER       DEFAULT 1, -- panen ke-1, ke-2 dalam satu musim
   catatan_kualitas    TEXT,         -- misal: "Banyak buah hijau" atau "Super Merah"
-  tanggal_panen       DATE          DEFAULT CURRENT_DATE,
+  tanggal_panen       DATE,
   -- FIX #2: tambah koma setelah tanggal_panen (sebelumnya kolom berikut tidak terbaca)
 
   -- Pasca-panen: Transformasi dari buah mentah ke produk siap jual.

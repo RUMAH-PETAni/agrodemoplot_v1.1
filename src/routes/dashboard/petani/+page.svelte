@@ -554,30 +554,38 @@
     </div>
   {/if}
 
-  <!-- Success/Error Toast -->
-  {#if success}
-    <div
-      class="fixed bottom-10 left-1/2 -translate-x-1/2 z-[2000] px-8 py-4 bg-emerald-600 text-white rounded-2xl shadow-2xl flex items-center gap-3 font-black uppercase text-[10px] tracking-widest"
-      in:fly={{ y: 20 }}
-      out:fade
-    >
-      <CheckCircle2 size={20} />
-      {success}
-    </div>
-  {/if}
+  <!-- Alert Notification -->
   {#if error}
     <div
-      class="fixed bottom-10 left-1/2 -translate-x-1/2 z-[2000] px-8 py-4 bg-red-600 text-white rounded-2xl shadow-2xl flex items-center gap-3 font-black uppercase text-[10px] tracking-widest"
+      class="fixed bottom-8 left-1/2 -translate-x-1/2 z-[9999]"
       in:fly={{ y: 20 }}
-      out:fade
     >
-      <AlertTriangle size={20} />
-      {error}
-      <button
-        onclick={() => (error = "")}
-        class="ml-4 opacity-50 hover:opacity-100 transition-opacity"
-        ><X size={16} /></button
+      <div
+        class="bg-red-600 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3"
       >
+        <AlertCircle size={20} />
+        <p class="text-sm font-bold uppercase tracking-widest">{error}</p>
+        <button
+          onclick={() => (error = "")}
+          class="p-1 hover:bg-white/20 rounded-lg ml-2"
+        >
+          <X size={16} />
+        </button>
+      </div>
+    </div>
+  {/if}
+
+  {#if success}
+    <div
+      class="fixed bottom-8 left-1/2 -translate-x-1/2 z-[9999]"
+      in:fly={{ y: 20 }}
+    >
+      <div
+        class="bg-emerald-600 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3"
+      >
+        <CheckCircle2 size={20} />
+        <p class="text-sm font-bold uppercase tracking-widest">{success}</p>
+      </div>
     </div>
   {/if}
 

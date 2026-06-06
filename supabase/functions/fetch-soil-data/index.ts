@@ -230,7 +230,7 @@ Deno.serve(async (req: Request) => {
     if (!pendingRows || pendingRows.length === 0) {
       return new Response(
         JSON.stringify({ message: "Tidak ada data pending untuk di-fetch." }),
-        { status: 200, headers: { "Content-Type": "application/json" } }
+        { status: 200, headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } }
       );
     }
 

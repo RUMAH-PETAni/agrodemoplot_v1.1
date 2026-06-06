@@ -228,6 +228,35 @@ Deno.serve(async (req: Request) => {
       filterDemoplotId = body?.demoplot_id ?? null;
     } catch { /* body kosong → fetch semua pending */ }
 
+    // Auto-insert missing pending rows if a specific demoplot is requested
+    if (filterDemoplotId) {
+      const { data: dplot } = await supabase
+        .from("demoplot")
+        .select("user_id, latitude, longitude")
+        .eq("id", filterDemoplotId)
+        .single();
+      
+      if (dplot && dplot.latitude && dplot.longitude) {
+        const missingRows = [];
+        const now = new Date();
+        for (let i = 0; i < 12; i++) {
+          const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+          missingRows.push({
+            user_id: dplot.user_id,
+            demoplot_id: filterDemoplotId,
+            latitude: dplot.latitude,
+            longitude: dplot.longitude,
+            tahun: d.getFullYear(),
+            bulan: d.getMonth() + 1,
+            fetch_status: "pending"
+          });
+        }
+        await supabase
+          .from("climate_data")
+          .upsert(missingRows, { onConflict: "demoplot_id,tahun,bulan", ignoreDuplicates: true });
+      }
+    }
+
     // ── Query semua baris pending ─────────────────────────────────────────
     let q = supabase
       .from("climate_data")
@@ -244,7 +273,7 @@ Deno.serve(async (req: Request) => {
     if (!pendingRows || pendingRows.length === 0) {
       return new Response(
         JSON.stringify({ message: "Tidak ada data klimatologi pending." }),
-        { status: 200, headers: { "Content-Type": "application/json" } }
+        { status: 200, headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } }
       );
     }
 

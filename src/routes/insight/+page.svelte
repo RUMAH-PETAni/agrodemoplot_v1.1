@@ -70,7 +70,8 @@
       desc: "Analisis kesehatan lahan kebun berdasarkan data geospasial.",
       icon: Trees,
       img: menu1Img,
-      active: false,
+      active: true,
+      href: "/insight/kesehatan_lahan",
     },
 
     {

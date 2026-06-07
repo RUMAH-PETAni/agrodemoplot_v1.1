@@ -321,7 +321,8 @@
                     foto_udara,
                     petani_id,
                     petani ( nama_lengkap )
-                `);
+                `)
+                .order('nama_demoplot');
 
             if (demoErr) throw demoErr;
 

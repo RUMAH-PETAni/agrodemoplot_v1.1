@@ -239,8 +239,8 @@
               <select
                 id="dplot-select"
                 bind:value={selectedDemoplot}
-                class="w-full bg-slate-950/50 border border-white/10 rounded-2xl px-5 py-4 pr-12 text-white font-bold focus:outline-none focus:ring-2 focus:ring-violet-500/50 transition-all cursor-pointer"
-                style="-webkit-appearance: none; -moz-appearance: none; appearance: none;"
+                class="w-full bg-slate-950/50 border border-white/10 rounded-2xl px-5 py-4 pr-12 text-white font-bold focus:outline-none focus:ring-2 focus:ring-violet-500/50 transition-all cursor-pointer appearance-none !bg-none"
+                style="-webkit-appearance: none; -moz-appearance: none; appearance: none; background-image: none;"
               >
                 {#each demoplots as dp}
                   <option value={dp} class="bg-slate-900">{dp.nama_demoplot}</option>

@@ -26,7 +26,7 @@
     loading = true;
     try {
       const [summaryRes, demoplotRes] = await Promise.all([
-        supabase.from('produktivitas_summary').select('*'),
+        supabase.from('produktivitas_summary').select('*').order('nama_demoplot'),
         supabase.from('demoplot').select('id, luas_demoplot')
       ]);
       
@@ -119,7 +119,8 @@
               <select
                 id="dplot-select"
                 bind:value={selectedSummary}
-                class="w-full bg-slate-950/50 border border-white/10 rounded-2xl px-5 py-4 pr-12 text-white font-bold focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all cursor-pointer appearance-none"
+                class="w-full bg-slate-950/50 border border-white/10 rounded-2xl px-5 py-4 pr-12 text-white font-bold focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all cursor-pointer appearance-none !bg-none"
+                style="-webkit-appearance: none; -moz-appearance: none; appearance: none; background-image: none;"
               >
                 {#each summaries as summary}
                   <option value={summary} class="bg-slate-900">{summary.nama_demoplot}</option>

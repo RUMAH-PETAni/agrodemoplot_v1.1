@@ -47,7 +47,8 @@
 
       const { data, error: dbError } = await supabase
         .from('demoplot')
-        .select('id, nama_demoplot, luas_demoplot, sistem_budidaya, tanaman_utama');
+        .select('id, nama_demoplot, luas_demoplot, sistem_budidaya, tanaman_utama')
+        .order('nama_demoplot');
       
       if (dbError) throw dbError;
       

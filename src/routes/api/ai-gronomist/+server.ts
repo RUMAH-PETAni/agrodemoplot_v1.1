@@ -53,73 +53,57 @@ export const POST: RequestHandler = async ({ request }) => {
       return json({ error: 'Kunci API OpenAI & Gemini tidak ditemukan. Harap konfigurasi API key di .env Anda.' }, { status: 500 });
     }
 
-    const configs = [
-      {
-        url: `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=${geminiKey}`,
-        sys: true
-      },
-      {
-        url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`,
-        sys: true
-      },
-      {
-        url: `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${geminiKey}`,
-        sys: false
-      },
-      {
-        url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${geminiKey}`,
-        sys: false
-      }
-    ];
-
     let lastError = '';
-    for (const config of configs) {
-      try {
-        const body: any = {};
-        if (config.sys) {
-          body.contents = messages.map((msg: any) => ({
-            role: msg.role === 'assistant' ? 'model' : 'user',
-            parts: [{ text: msg.content }],
-          }));
-          body.systemInstruction = {
-            parts: [{ text: SYSTEM_PROMPT }]
-          };
-        } else {
-          body.contents = [
-            {
-              role: 'user',
-              parts: [{ text: `INSTRUKSI SISTEM: ${SYSTEM_PROMPT}\n\nHarap jawab pesan berikutnya dengan mematuhi instruksi sistem di atas.` }]
-            },
-            ...messages.map((msg: any) => ({
+    if (geminiKey) {
+      // Use v1beta and fallback to 1.5-flash
+      const configs = [
+        {
+          url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`,
+          sys: true
+        },
+        {
+          url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`,
+          sys: true
+        }
+      ];
+
+      for (const config of configs) {
+        try {
+          const body: any = {};
+          if (config.sys) {
+            body.contents = messages.map((msg: any) => ({
               role: msg.role === 'assistant' ? 'model' : 'user',
               parts: [{ text: msg.content }],
-            }))
-          ];
+            }));
+            body.systemInstruction = {
+              parts: [{ text: SYSTEM_PROMPT }]
+            };
+          }
+
+          const geminiResponse = await fetch(config.url, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(body),
+          });
+
+          if (!geminiResponse.ok) {
+            const errData = await geminiResponse.json().catch(() => ({}));
+            const errMsg = errData?.error?.message || `HTTP ${geminiResponse.status}`;
+            throw new Error(errMsg);
+          }
+
+          const geminiData = await geminiResponse.json();
+          const geminiContent = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+
+          if (geminiContent) {
+            return json({ content: geminiContent });
+          }
+        } catch (err: any) {
+          lastError = err?.message || String(err);
+          console.warn(`Gemini configuration failed (${config.url}):`, lastError);
         }
-
-        const geminiResponse = await fetch(config.url, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(body),
-        });
-
-        if (!geminiResponse.ok) {
-          const errData = await geminiResponse.json().catch(() => ({}));
-          const errMsg = errData?.error?.message || `HTTP ${geminiResponse.status}`;
-          throw new Error(errMsg);
-        }
-
-        const geminiData = await geminiResponse.json();
-        const geminiContent = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
-
-        if (geminiContent) {
-          return json({ content: geminiContent });
-        }
-      } catch (err: any) {
-        lastError = err?.message || String(err);
-        console.warn(`Gemini configuration failed (${config.url}):`, lastError);
       }
     }
 
@@ -127,9 +111,9 @@ export const POST: RequestHandler = async ({ request }) => {
     if (env.OPENROUTER_API_KEY) {
       console.warn(`Gemini failed. Initiating OpenRouter fallback...`);
       const openrouterModels = [
-        "openai/gpt-oss-120b:free",
-        "deepseek/deepseek-v4-flash:free",
-        "google/gemma-3-27b-it:free"
+        "google/gemini-2.0-flash-exp:free",
+        "google/gemini-flash-1.5-8b",
+        "meta-llama/llama-3.3-70b-instruct"
       ];
       
       for (const model of openrouterModels) {

@@ -169,13 +169,15 @@ export const POST: RequestHandler = async ({ request }) => {
     let lastError = '';
     
     if (geminiKey) {
+      // Use v1beta because systemInstruction and responseMimeType are supported there.
+      // Fallback to gemini-1.5-flash if 2.5 is experiencing high demand.
       const configs = [
         {
-          url: `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=${geminiKey}`,
+          url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`,
           sys: true
         },
         {
-          url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`,
+          url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`,
           sys: true
         }
       ];
@@ -191,7 +193,7 @@ export const POST: RequestHandler = async ({ request }) => {
             body.systemInstruction = {
               parts: [{ text: SYSTEM_PROMPT }]
             };
-            // Force JSON output on Gemini 2.5
+            // Force JSON output
             body.generationConfig = {
               responseMimeType: "application/json"
             };
@@ -235,10 +237,11 @@ export const POST: RequestHandler = async ({ request }) => {
     // If Gemini fails or missing, try OpenRouter fallback system
     if (env.OPENROUTER_API_KEY) {
       console.warn(`Gemini failed. Initiating OpenRouter fallback...`);
+      // Use valid OpenRouter model IDs
       const openrouterModels = [
-        "google/gemini-2.5-flash:free",
-        "deepseek/deepseek-chat:free",
-        "meta-llama/llama-3-8b-instruct:free"
+        "google/gemini-2.5-flash",
+        "google/gemini-flash-1.5-8b",
+        "meta-llama/llama-3.3-70b-instruct"
       ];
       
       for (const model of openrouterModels) {

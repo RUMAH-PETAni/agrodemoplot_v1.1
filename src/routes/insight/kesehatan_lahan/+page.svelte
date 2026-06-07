@@ -137,7 +137,7 @@
                     map = L.map(mapElement, { 
                         zoomControl: false,
                         gestureHandling: true 
-                    }).setView([-2.5489, 118.0149], 5);
+                    } as any).setView([-2.5489, 118.0149], 5);
 
                     // Buat pane khusus untuk raster/foto udara agar bisa diatur z-index
                     map.createPane('rasterPane');

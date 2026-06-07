@@ -8,7 +8,7 @@ CREATE TABLE profiles (
   address TEXT,
   phone TEXT,
   avatar_url TEXT,
-  role TEXT DEFAULT 'user', -- admin, user, manager
+  role TEXT DEFAULT 'user', -- administrator, user, manager
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );

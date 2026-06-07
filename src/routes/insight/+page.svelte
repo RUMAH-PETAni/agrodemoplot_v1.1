@@ -12,6 +12,7 @@
     GraduationCap,
     FileChartPie,
     Lightbulb,
+    Target,
     Sparkles,
     PackageOpen,
     BrainCircuit,
@@ -49,14 +50,7 @@
   });
 
   const insightItems = [
-    {
-      name: "Modul Edukasi",
-      desc: "Materi sekolah lapangan & pelatihan pertanian berkelanjutan.",
-      icon: GraduationCap,
-      img: menu2Img,
-      active: true,
-      href: "/insight/modul_edukasi",
-    },
+    
     {
       name: "Tanah & Iklim",
       desc: "Informasi tanah & iklim berdasarkan sumber data terbuka ",
@@ -77,9 +71,27 @@
     {
       name: "Produktivitas",
       desc: "Analisis produktivitas kebun & efisiensi pengelolaan lahan.",
-      icon: Lightbulb,
+      icon: Target,
       img: menu6Img,
-      active: false,
+      active: true,
+      href: "/insight/produktivitas",
+    },
+    {
+      name: "Rekomendasi Teknis",
+      desc: "Saran praktik budidaya terbaik dari ahli agronomis/akademisi.",
+      icon: BrainCircuit,
+      img: menu3Img,
+      active: true,
+      href: "/insight/rekomendasi",
+    },
+
+    {
+      name: "Modul Edukasi",
+      desc: "Materi sekolah lapangan & pelatihan pertanian berkelanjutan.",
+      icon: GraduationCap,
+      img: menu2Img,
+      active: true,
+      href: "/insight/modul_edukasi",
     },
     {
       name: "Jejak Karbon",
@@ -88,13 +100,7 @@
       img: menu4Img,
       active: false,
     },
-    {
-      name: "Rekomendasi Teknis",
-      desc: "Saran praktik budidaya terbaik dari ahli agronomis/akademisi.",
-      icon: Lightbulb,
-      img: menu3Img,
-      active: false,
-    },
+    
   ];
 </script>
 
@@ -233,7 +239,7 @@
                   class="text-[10px] font-black uppercase tracking-widest flex items-center gap-2"
                 >
                   {item.name === "Modul Edukasi"
-                    ? "Buka Modul"
+                    ? "Akses Materi"
                     : "Buka Analisis"}
                   <ArrowRight size={14} />
                 </span>

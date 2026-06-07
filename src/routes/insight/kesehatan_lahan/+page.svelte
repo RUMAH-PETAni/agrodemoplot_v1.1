@@ -434,10 +434,6 @@
     }
 </script>
 
-<svelte:head>
-    <title>Kesehatan Lahan (Satelit) | Agrodemoplot</title>
-</svelte:head>
-
 <div class="min-h-screen pb-24 px-6 max-w-7xl mx-auto space-y-12">
     <!-- Hero Section (Aligned with Parent) -->
     <section

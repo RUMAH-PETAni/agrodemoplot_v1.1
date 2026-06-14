@@ -39,6 +39,11 @@
     Calendar,
     Smile,
     ArrowLeft,
+    LayoutGrid,
+    List,
+    ArrowUpDown,
+    ArrowDown,
+    ArrowUp,
   } from "@lucide/svelte";
 
   import { fade, fly, scale } from "svelte/transition";
@@ -57,6 +62,8 @@
   let showDeleteConfirm = $state(false);
   let deleteTarget = $state<Petani | null>(null);
   let selectedPetani = $state<Petani | null>(null);
+  let viewMode = $state<"grid" | "list">("grid");
+  let actionBarHeight = $state(0);
 
   let totalLuasLahan = $derived(
     petaniList
@@ -83,6 +90,24 @@
     showViewModal = true;
   }
 
+  // Sorting state
+  let sortColumn = $state<"nama_lengkap" | "luas_lahan" | "desa" | "">("");
+  let sortDirection = $state<"asc" | "desc">("asc");
+
+  function handleSort(column: "nama_lengkap" | "luas_lahan" | "desa") {
+    if (sortColumn === column) {
+      if (sortDirection === "asc") {
+        sortDirection = "desc";
+      } else {
+        sortColumn = "";
+        sortDirection = "asc";
+      }
+    } else {
+      sortColumn = column;
+      sortDirection = "asc";
+    }
+  }
+
   // Pagination state
   let pageIndex = $state(0);
   const pageSize = 12;
@@ -98,14 +123,36 @@
     ),
   );
 
+  // Sorted data
+  let sortedPetani = $derived(
+    [...filteredPetani].sort((a, b) => {
+      if (!sortColumn) return 0;
+
+      let valA = (a as any)[sortColumn];
+      let valB = (b as any)[sortColumn];
+
+      if (sortColumn === "luas_lahan") {
+        valA = Number(valA) || 0;
+        valB = Number(valB) || 0;
+      } else {
+        valA = (valA || "").toString().toLowerCase();
+        valB = (valB || "").toString().toLowerCase();
+      }
+
+      if (valA < valB) return sortDirection === "asc" ? -1 : 1;
+      if (valA > valB) return sortDirection === "asc" ? 1 : -1;
+      return 0;
+    }),
+  );
+
   // Paginated data
-  let totalPages = $derived(Math.ceil(filteredPetani.length / pageSize));
+  let totalPages = $derived(Math.ceil(sortedPetani.length / pageSize));
   let paginatedPetani = $derived(
-    filteredPetani.slice(pageIndex * pageSize, (pageIndex + 1) * pageSize),
+    sortedPetani.slice(pageIndex * pageSize, (pageIndex + 1) * pageSize),
   );
   let startItem = $derived(pageIndex * pageSize + 1);
   let endItem = $derived(
-    Math.min((pageIndex + 1) * pageSize, filteredPetani.length),
+    Math.min((pageIndex + 1) * pageSize, sortedPetani.length),
   );
 
   // Table helper functions
@@ -515,11 +562,12 @@
 
   <!-- Action Bar -->
   <div
-    class="sticky z-[100] flex flex-row items-center gap-4 bg-background/60 backdrop-blur-3xl p-4 rounded-[2rem] border border-border/50 shadow-2xl shadow-black/5 transition-all duration-500"
+    bind:clientHeight={actionBarHeight}
+    class="sticky z-[100] flex flex-row items-center gap-4 bg-background/60 backdrop-blur-3xl p-4 rounded-[2rem] border border-border/50 shadow-2xl shadow-black/5 transition-all duration-500 flex-wrap md:flex-nowrap"
     style="top: calc(var(--nav-height, 5rem) + 1rem)"
     in:fade={{ delay: 200 }}
   >
-    <div class="relative flex-1 w-full group">
+    <div class="relative flex-1 w-full group min-w-[200px]">
       <Search
         size={20}
         class="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-emerald-500 transition-colors"
@@ -531,6 +579,30 @@
         class="w-full bg-muted/30 border-transparent focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/10 rounded-2xl pl-12 pr-4 py-3 text-sm font-medium transition-all"
       />
     </div>
+
+    <div
+      class="flex items-center p-1 bg-muted/30 rounded-2xl border border-border/50"
+    >
+      <button
+        onclick={() => (viewMode = "grid")}
+        class="p-3 rounded-xl transition-all {viewMode === 'grid'
+          ? 'bg-white shadow-sm text-emerald-600'
+          : 'text-muted-foreground hover:text-foreground hover:bg-black/5'}"
+        title="Tampilan Grid"
+      >
+        <LayoutGrid size={18} />
+      </button>
+      <button
+        onclick={() => (viewMode = "list")}
+        class="p-3 rounded-xl transition-all {viewMode === 'list'
+          ? 'bg-white shadow-sm text-emerald-600'
+          : 'text-muted-foreground hover:text-foreground hover:bg-black/5'}"
+        title="Tampilan List"
+      >
+        <List size={18} />
+      </button>
+    </div>
+
     <button
       onclick={openAddForm}
       class="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-black uppercase tracking-widest text-[10px] p-4 md:py-4 md:px-8 rounded-2xl transition-all shadow-lg shadow-emerald-600/20 active:scale-95 whitespace-nowrap"
@@ -615,154 +687,358 @@
       >
     </div>
   {:else if !loading}
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-      {#each paginatedPetani as petani, i (petani.id)}
-        <div
-          class="group relative bg-card/60 backdrop-blur-3xl border border-border shadow-2xl shadow-black/5 rounded-[2.5rem] overflow-hidden p-3 transition-all duration-500 hover:border-emerald-500/50 hover:-translate-y-2"
-          in:fly={{ y: 20, delay: 100 * (i % pageSize), easing: backOut }}
-        >
-          <!-- Card Header Mesh -->
+    {#if viewMode === "grid"}
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        {#each paginatedPetani as petani, i (petani.id)}
           <div
-            class="relative h-32 overflow-hidden rounded-[2rem] bg-emerald-950 mb-6"
+            class="group relative bg-card/60 backdrop-blur-3xl border border-border shadow-2xl shadow-black/5 rounded-[2.5rem] overflow-hidden p-3 transition-all duration-500 hover:border-emerald-500/50 hover:-translate-y-2"
+            in:fly={{ y: 20, delay: 100 * (i % pageSize), easing: backOut }}
           >
-            <div class="absolute inset-0 opacity-40">
-              <div
-                class="absolute -top-1/2 -right-1/4 w-full h-[150%] bg-emerald-500 blur-3xl rounded-full"
-              ></div>
-            </div>
-
-            <div class="relative z-10 p-6 flex items-center gap-4">
-              <div class="relative group/avatar">
-                <div
-                  class="w-20 h-20 rounded-[1.5rem] overflow-hidden border-2 border-white/20 shadow-2xl transition-transform duration-500 group-hover/avatar:scale-105"
-                >
-                  {#if petani.foto_profil}
-                    <img
-                      src={petani.foto_profil}
-                      alt={petani.nama_lengkap}
-                      class="w-full h-full object-cover"
-                    />
-                  {:else}
-                    <div
-                      class="w-full h-full bg-white/10 flex items-center justify-center text-white"
-                    >
-                      <User size={32} />
-                    </div>
-                  {/if}
-                </div>
-              </div>
-
-              <div class="grow min-w-0">
-                <h3 class="text-lg font-black text-white truncate leading-none">
-                  {petani.nama_lengkap}
-                </h3>
-                <div
-                  class="flex items-center gap-1.5 text-[10px] text-emerald-100/60 font-bold uppercase tracking-wider mt-2"
-                >
-                  <MapPin size={10} />
-                  {petani.desa || "-"}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="px-5 pb-5 space-y-6">
-            <div class="grid grid-cols-1 gap-3">
-              <div class="p-4 bg-muted/30 rounded-2xl border border-border/50">
-                <p
-                  class="text-[8px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-1"
-                >
-                  Komoditas
-                </p>
-                <div class="flex items-center gap-2">
-                  <Sprout size={14} class="text-emerald-500" />
-                  <span class="text-xs font-bold truncate"
-                    >{petani.tanaman_komoditas || "-"}</span
-                  >
-                </div>
-              </div>
-              <div class="p-4 bg-muted/30 rounded-2xl border border-border/50">
-                <p
-                  class="text-[8px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-1"
-                >
-                  Luas Lahan
-                </p>
-                <div class="flex items-center gap-2">
-                  <LandPlot size={14} class="text-emerald-500" />
-                  <span class="text-xs font-bold"
-                    >{petani.luas_lahan ? `${petani.luas_lahan} ha` : "-"}</span
-                  >
-                </div>
-              </div>
-            </div>
-
-            <!-- Footer Meta -->
+            <!-- Card Header Mesh -->
             <div
-              class="flex items-center justify-between text-[10px] font-bold text-muted-foreground/60 border-t border-border/40 pt-4"
+              class="relative h-32 overflow-hidden rounded-[2rem] bg-emerald-950 mb-6"
             >
-              <div>#{petani.id.slice(0, 8).toUpperCase()}</div>
-              <div>{formatDate(petani.created_at)}</div>
+              <div class="absolute inset-0 opacity-40">
+                <div
+                  class="absolute -top-1/2 -right-1/4 w-full h-[150%] bg-emerald-500 blur-3xl rounded-full"
+                ></div>
+              </div>
+
+              <div class="relative z-10 p-6 flex items-center gap-4">
+                <div class="relative group/avatar">
+                  <div
+                    class="w-20 h-20 rounded-[1.5rem] overflow-hidden border-2 border-white/20 shadow-2xl transition-transform duration-500 group-hover/avatar:scale-105"
+                  >
+                    {#if petani.foto_profil}
+                      <img
+                        src={petani.foto_profil}
+                        alt={petani.nama_lengkap}
+                        class="w-full h-full object-cover"
+                      />
+                    {:else}
+                      <div
+                        class="w-full h-full bg-white/10 flex items-center justify-center text-white"
+                      >
+                        <User size={32} />
+                      </div>
+                    {/if}
+                  </div>
+                </div>
+
+                <div class="grow min-w-0">
+                  <h3
+                    class="text-lg font-black text-white truncate leading-none"
+                  >
+                    {petani.nama_lengkap}
+                  </h3>
+                  <div
+                    class="flex items-center gap-1.5 text-[10px] text-emerald-100/60 font-bold uppercase tracking-wider mt-2"
+                  >
+                    <MapPin size={10} />
+                    {petani.desa || "-"}
+                  </div>
+                </div>
+              </div>
             </div>
 
-            <!-- Actions -->
-            <div class="flex gap-2">
-              <div class="relative flex-1 group/btn">
-                <button
-                  onclick={() => openViewModal(petani)}
-                  class="w-full h-11 flex items-center justify-center bg-white border border-border hover:border-emerald-500/50 hover:text-emerald-600 rounded-xl transition-all"
-                >
-                  <Eye size={18} />
-                </button>
-                <!-- Tooltip -->
+            <div class="px-5 pb-5 space-y-6">
+              <div class="grid grid-cols-1 gap-3">
                 <div
-                  class="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 px-3 py-1.5 bg-foreground text-background text-[10px] font-black uppercase tracking-widest rounded-lg opacity-0 pointer-events-none group-hover/btn:opacity-100 group-hover/btn:-translate-y-1 translate-y-1 transition-all duration-200 whitespace-nowrap z-50 shadow-xl"
+                  class="p-4 bg-muted/30 rounded-2xl border border-border/50"
                 >
-                  Rincian
-                  <div
-                    class="absolute top-full left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-foreground rotate-45"
-                  ></div>
+                  <p
+                    class="text-[8px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-1"
+                  >
+                    Komoditas
+                  </p>
+                  <div class="flex items-center gap-2">
+                    <Sprout size={14} class="text-emerald-500" />
+                    <span class="text-xs font-bold truncate"
+                      >{petani.tanaman_komoditas || "-"}</span
+                    >
+                  </div>
                 </div>
-              </div>
-              <div class="relative flex-1 group/btn">
-                <button
-                  onclick={() => openEditForm(petani)}
-                  class="w-full h-11 flex items-center justify-center bg-white border border-border hover:border-blue-500/50 hover:text-blue-600 rounded-xl transition-all"
-                >
-                  <Pencil size={18} />
-                </button>
-                <!-- Tooltip -->
                 <div
-                  class="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 px-3 py-1.5 bg-foreground text-background text-[10px] font-black uppercase tracking-widest rounded-lg opacity-0 pointer-events-none group-hover/btn:opacity-100 group-hover/btn:-translate-y-1 translate-y-1 transition-all duration-200 whitespace-nowrap z-50 shadow-xl"
+                  class="p-4 bg-muted/30 rounded-2xl border border-border/50"
                 >
-                  Edit
-                  <div
-                    class="absolute top-full left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-foreground rotate-45"
-                  ></div>
+                  <p
+                    class="text-[8px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-1"
+                  >
+                    Luas Lahan
+                  </p>
+                  <div class="flex items-center gap-2">
+                    <LandPlot size={14} class="text-emerald-500" />
+                    <span class="text-xs font-bold"
+                      >{petani.luas_lahan
+                        ? `${petani.luas_lahan} ha`
+                        : "-"}</span
+                    >
+                  </div>
                 </div>
               </div>
 
-              <div class="relative flex-1 group/btn">
-                <button
-                  onclick={() => initiateDelete(petani)}
-                  class="w-full h-11 flex items-center justify-center bg-white border border-border hover:border-red-500/50 rounded-xl transition-all text-red-500/40 hover:text-red-500"
-                >
-                  <Trash2 size={18} />
-                </button>
-                <!-- Tooltip -->
-                <div
-                  class="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 px-3 py-1.5 bg-foreground text-background text-[10px] font-black uppercase tracking-widest rounded-lg opacity-0 pointer-events-none group-hover/btn:opacity-100 group-hover/btn:-translate-y-1 translate-y-1 transition-all duration-200 whitespace-nowrap z-50 shadow-xl"
-                >
-                  Hapus
+              <!-- Footer Meta -->
+              <div
+                class="flex items-center justify-between text-[10px] font-bold text-muted-foreground/60 border-t border-border/40 pt-4"
+              >
+                <div>#{petani.id.slice(0, 8).toUpperCase()}</div>
+                <div>{formatDate(petani.created_at)}</div>
+              </div>
+
+              <!-- Actions -->
+              <div class="flex gap-2">
+                <div class="relative flex-1 group/btn">
+                  <button
+                    onclick={() => openViewModal(petani)}
+                    class="w-full h-11 flex items-center justify-center bg-white border border-border hover:border-emerald-500/50 hover:text-emerald-600 rounded-xl transition-all"
+                  >
+                    <Eye size={18} />
+                  </button>
+                  <!-- Tooltip -->
                   <div
-                    class="absolute top-full left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-foreground rotate-45"
-                  ></div>
+                    class="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 px-3 py-1.5 bg-foreground text-background text-[10px] font-black uppercase tracking-widest rounded-lg opacity-0 pointer-events-none group-hover/btn:opacity-100 group-hover/btn:-translate-y-1 translate-y-1 transition-all duration-200 whitespace-nowrap z-50 shadow-xl"
+                  >
+                    Rincian
+                    <div
+                      class="absolute top-full left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-foreground rotate-45"
+                    ></div>
+                  </div>
+                </div>
+                <div class="relative flex-1 group/btn">
+                  <button
+                    onclick={() => openEditForm(petani)}
+                    class="w-full h-11 flex items-center justify-center bg-white border border-border hover:border-blue-500/50 hover:text-blue-600 rounded-xl transition-all"
+                  >
+                    <Pencil size={18} />
+                  </button>
+                  <!-- Tooltip -->
+                  <div
+                    class="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 px-3 py-1.5 bg-foreground text-background text-[10px] font-black uppercase tracking-widest rounded-lg opacity-0 pointer-events-none group-hover/btn:opacity-100 group-hover/btn:-translate-y-1 translate-y-1 transition-all duration-200 whitespace-nowrap z-50 shadow-xl"
+                  >
+                    Edit
+                    <div
+                      class="absolute top-full left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-foreground rotate-45"
+                    ></div>
+                  </div>
+                </div>
+
+                <div class="relative flex-1 group/btn">
+                  <button
+                    onclick={() => initiateDelete(petani)}
+                    class="w-full h-11 flex items-center justify-center bg-white border border-border hover:border-red-500/50 rounded-xl transition-all text-red-500/40 hover:text-red-500"
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                  <!-- Tooltip -->
+                  <div
+                    class="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 px-3 py-1.5 bg-foreground text-background text-[10px] font-black uppercase tracking-widest rounded-lg opacity-0 pointer-events-none group-hover/btn:opacity-100 group-hover/btn:-translate-y-1 translate-y-1 transition-all duration-200 whitespace-nowrap z-50 shadow-xl"
+                  >
+                    Hapus
+                    <div
+                      class="absolute top-full left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-foreground rotate-45"
+                    ></div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
+        {/each}
+      </div>
+    {:else}
+      <div
+        class="bg-card/60 backdrop-blur-3xl border border-border rounded-md shadow-2xl shadow-black/5 w-full max-w-full"
+        style="--action-bar-h: {actionBarHeight}px;"
+        in:fade
+      >
+        <div class="w-full overflow-x-auto lg:overflow-visible">
+          <table class="w-full text-left border-collapse relative min-w-[800px] lg:min-w-0">
+            <thead
+              class="sticky z-30 bg-background/95 backdrop-blur-xl shadow-sm after:absolute after:bottom-0 after:left-0 after:right-0 after:h-px after:bg-border/50 rounded-t-md top-0 lg:top-[calc(var(--nav-height,5rem)+1rem+var(--action-bar-h)+1.5rem)]"
+            >
+              <tr
+                class="bg-muted/30 text-[10px] uppercase tracking-widest text-muted-foreground font-black"
+              >
+                <th class="p-5 pl-8 rounded-t-md">
+                  <button
+                    class="flex items-center gap-2 hover:text-foreground transition-colors group"
+                    onclick={() => handleSort("nama_lengkap")}
+                  >
+                    Profil Petani
+                    {#if sortColumn !== "nama_lengkap"}
+                      <ArrowUpDown
+                        size={12}
+                        class="opacity-0 group-hover:opacity-50 transition-opacity"
+                      />
+                    {:else if sortDirection === "asc"}
+                      <ArrowUp size={12} class="text-emerald-500" />
+                    {:else}
+                      <ArrowDown size={12} class="text-emerald-500" />
+                    {/if}
+                  </button>
+                </th>
+                <th class="p-5">
+                  <button
+                    class="flex items-center gap-2 hover:text-foreground transition-colors group"
+                    onclick={() => handleSort("luas_lahan")}
+                  >
+                    Informasi Lahan
+                    {#if sortColumn !== "luas_lahan"}
+                      <ArrowUpDown
+                        size={12}
+                        class="opacity-0 group-hover:opacity-50 transition-opacity"
+                      />
+                    {:else if sortDirection === "asc"}
+                      <ArrowUp size={12} class="text-emerald-500" />
+                    {:else}
+                      <ArrowDown size={12} class="text-emerald-500" />
+                    {/if}
+                  </button>
+                </th>
+                <th class="p-5">
+                  <button
+                    class="flex items-center gap-2 hover:text-foreground transition-colors group"
+                    onclick={() => handleSort("desa")}
+                  >
+                    Lokasi
+                    {#if sortColumn !== "desa"}
+                      <ArrowUpDown
+                        size={12}
+                        class="opacity-0 group-hover:opacity-50 transition-opacity"
+                      />
+                    {:else if sortDirection === "asc"}
+                      <ArrowUp size={12} class="text-emerald-500" />
+                    {:else}
+                      <ArrowDown size={12} class="text-emerald-500" />
+                    {/if}
+                  </button>
+                </th>
+                <th class="p-5 text-center rounded-t-md">Aksi</th>
+              </tr>
+            </thead>
+            <tbody class="text-sm">
+              {#each paginatedPetani as petani, i (petani.id)}
+                <tr
+                  class="border-b border-border/50 hover:bg-muted/20 transition-colors group"
+                >
+                  <td class="p-5 pl-8">
+                    <div class="flex items-center gap-4">
+                      <div
+                        class="w-12 h-12 rounded-[1rem] overflow-hidden border border-border/50 bg-emerald-950/20 flex-shrink-0"
+                      >
+                        {#if petani.foto_profil}
+                          <img
+                            src={petani.foto_profil}
+                            alt={petani.nama_lengkap}
+                            class="w-full h-full object-cover"
+                          />
+                        {:else}
+                          <div
+                            class="w-full h-full flex items-center justify-center text-muted-foreground"
+                          >
+                            <User size={20} />
+                          </div>
+                        {/if}
+                      </div>
+                      <div>
+                        <div class="font-bold text-foreground">
+                          {petani.nama_lengkap}
+                        </div>
+                        <div
+                          class="text-[10px] text-muted-foreground font-medium mt-1"
+                        >
+                          #{petani.id.slice(0, 8).toUpperCase()}
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="p-5">
+                    <div class="space-y-1.5">
+                      <div class="flex items-center gap-2 text-xs">
+                        <Sprout size={14} class="text-emerald-500" />
+                        <span class="font-medium"
+                          >{petani.tanaman_komoditas || "-"}</span
+                        >
+                      </div>
+                      <div class="flex items-center gap-2 text-xs">
+                        <LandPlot size={14} class="text-blue-500" />
+                        <span class="font-medium"
+                          >{petani.luas_lahan
+                            ? `${petani.luas_lahan} ha`
+                            : "-"}</span
+                        >
+                      </div>
+                    </div>
+                  </td>
+                  <td class="p-5">
+                    <div class="flex items-center gap-2 text-xs">
+                      <MapPin size={14} class="text-muted-foreground" />
+                      <span class="font-medium">{petani.desa || "-"}</span>
+                    </div>
+                  </td>
+                  <td class="p-5">
+                    <div class="flex items-center justify-center gap-2">
+                      <div class="relative group/btn">
+                        <button
+                          onclick={() => openViewModal(petani)}
+                          class="p-2.5 flex items-center justify-center bg-white border border-border hover:border-emerald-500/50 hover:text-emerald-600 rounded-xl transition-all shadow-sm"
+                        >
+                          <Eye size={16} />
+                        </button>
+                        <!-- Tooltip -->
+                        <div
+                          class="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 px-3 py-1.5 bg-foreground text-background text-[10px] font-black uppercase tracking-widest rounded-lg opacity-0 pointer-events-none group-hover/btn:opacity-100 group-hover/btn:-translate-y-1 translate-y-1 transition-all duration-200 whitespace-nowrap z-50 shadow-xl"
+                        >
+                          Rincian
+                          <div
+                            class="absolute top-full left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-foreground rotate-45"
+                          ></div>
+                        </div>
+                      </div>
+
+                      <div class="relative group/btn">
+                        <button
+                          onclick={() => openEditForm(petani)}
+                          class="p-2.5 flex items-center justify-center bg-white border border-border hover:border-blue-500/50 hover:text-blue-600 rounded-xl transition-all shadow-sm"
+                        >
+                          <Pencil size={16} />
+                        </button>
+                        <!-- Tooltip -->
+                        <div
+                          class="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 px-3 py-1.5 bg-foreground text-background text-[10px] font-black uppercase tracking-widest rounded-lg opacity-0 pointer-events-none group-hover/btn:opacity-100 group-hover/btn:-translate-y-1 translate-y-1 transition-all duration-200 whitespace-nowrap z-50 shadow-xl"
+                        >
+                          Edit
+                          <div
+                            class="absolute top-full left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-foreground rotate-45"
+                          ></div>
+                        </div>
+                      </div>
+
+                      <div class="relative group/btn">
+                        <button
+                          onclick={() => initiateDelete(petani)}
+                          class="p-2.5 flex items-center justify-center bg-white border border-border hover:border-red-500/50 text-red-500/70 hover:text-red-600 rounded-xl transition-all shadow-sm"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                        <!-- Tooltip -->
+                        <div
+                          class="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 px-3 py-1.5 bg-foreground text-background text-[10px] font-black uppercase tracking-widest rounded-lg opacity-0 pointer-events-none group-hover/btn:opacity-100 group-hover/btn:-translate-y-1 translate-y-1 transition-all duration-200 whitespace-nowrap z-50 shadow-xl"
+                        >
+                          Hapus
+                          <div
+                            class="absolute top-full left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-foreground rotate-45"
+                          ></div>
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              {/each}
+            </tbody>
+          </table>
         </div>
-      {/each}
-    </div>
+      </div>
+    {/if}
 
     <!-- Pagination -->
     {#if totalPages > 1}
@@ -968,9 +1244,9 @@
                 >
                 <select
                   bind:value={pendidikan}
-                 class="w-full bg-muted/30 border-border rounded-xl p-3 text-sm font-medium"
+                  class="w-full bg-muted/30 border-border rounded-xl p-3 text-sm font-medium"
                 >
-                <option value="">Pilih...</option>
+                  <option value="">Pilih...</option>
                   <option value="SD">SD</option>
                   <option value="SMP">SMP</option>
                   <option value="SMA">SMA</option>

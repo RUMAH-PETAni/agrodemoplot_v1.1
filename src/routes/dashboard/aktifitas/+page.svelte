@@ -40,6 +40,11 @@
     Eye,
     User,
     ArrowLeft,
+    LayoutGrid,
+    List,
+    ArrowUpDown,
+    ArrowUp,
+    ArrowDown,
   } from "@lucide/svelte";
 
   import { fade, fly, scale } from "svelte/transition";
@@ -72,17 +77,62 @@
     }),
   );
 
+  // View & UI State
+  let viewMode = $state<"grid" | "list">("grid");
+  let actionBarHeight = $state(0);
+
+  // Sorting
+  let sortColumn = $state("");
+  let sortDirection = $state<"asc" | "desc">("asc");
+
+  function handleSort(column: string) {
+    if (sortColumn === column) {
+      if (sortDirection === "asc") {
+        sortDirection = "desc";
+      } else {
+        sortColumn = "";
+        sortDirection = "asc";
+      }
+    } else {
+      sortColumn = column;
+      sortDirection = "asc";
+    }
+  }
+
+  let sortedLogs = $derived(
+    [...filteredLogs].sort((a, b) => {
+      if (!sortColumn) return 0;
+      let valA = (a as any)[sortColumn];
+      let valB = (b as any)[sortColumn];
+      
+      if (sortColumn === "nama_demoplot") {
+        valA = a.demoplot?.nama_demoplot || "";
+        valB = b.demoplot?.nama_demoplot || "";
+      } else if (sortColumn === "tanggal") {
+        valA = new Date(valA).getTime();
+        valB = new Date(valB).getTime();
+      } else {
+        valA = (valA || "").toString().toLowerCase();
+        valB = (valB || "").toString().toLowerCase();
+      }
+
+      if (valA < valB) return sortDirection === "asc" ? -1 : 1;
+      if (valA > valB) return sortDirection === "asc" ? 1 : -1;
+      return 0;
+    })
+  );
+
   // Pagination
   let pageIndex = $state(0);
   const pageSize = 12;
 
-  let totalPages = $derived(Math.ceil(filteredLogs.length / pageSize));
+  let totalPages = $derived(Math.ceil(sortedLogs.length / pageSize));
   let paginatedLogs = $derived(
-    filteredLogs.slice(pageIndex * pageSize, (pageIndex + 1) * pageSize),
+    sortedLogs.slice(pageIndex * pageSize, (pageIndex + 1) * pageSize),
   );
   let startItem = $derived(pageIndex * pageSize + 1);
   let endItem = $derived(
-    Math.min((pageIndex + 1) * pageSize, filteredLogs.length),
+    Math.min((pageIndex + 1) * pageSize, sortedLogs.length),
   );
 
   function previousPage() {
@@ -437,11 +487,12 @@
 
   <!-- Action Bar -->
   <div
-    class="sticky z-[100] flex flex-row items-center gap-3 bg-background/60 backdrop-blur-3xl p-3 md:p-4 rounded-[2rem] border border-border/50 shadow-2xl shadow-black/5 transition-all duration-500"
+    bind:clientHeight={actionBarHeight}
+    class="sticky z-[100] flex flex-row items-center gap-3 bg-background/60 backdrop-blur-3xl p-3 md:p-4 rounded-[2rem] border border-border/50 shadow-2xl shadow-black/5 transition-all duration-500 flex-wrap md:flex-nowrap"
     style="top: calc(var(--nav-height, 5rem) + 1rem)"
   >
     <!-- Search -->
-    <div class="relative flex-1 group">
+    <div class="relative flex-1 group min-w-[200px]">
       <Search
         size={18}
         class="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-emerald-500 transition-colors"
@@ -452,6 +503,29 @@
         placeholder="Cari aktivitas..."
         class="w-full bg-muted/40 border-transparent focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/10 rounded-2xl pl-11 pr-4 py-3 text-sm font-medium transition-all"
       />
+    </div>
+
+    <div
+      class="flex items-center p-1 bg-muted/30 rounded-2xl border border-border/50"
+    >
+      <button
+        onclick={() => (viewMode = "grid")}
+        class="p-3 rounded-xl transition-all {viewMode === 'grid'
+          ? 'bg-white shadow-sm text-emerald-600'
+          : 'text-muted-foreground hover:text-foreground hover:bg-black/5'}"
+        title="Tampilan Grid"
+      >
+        <LayoutGrid size={18} />
+      </button>
+      <button
+        onclick={() => (viewMode = "list")}
+        class="p-3 rounded-xl transition-all {viewMode === 'list'
+          ? 'bg-white shadow-sm text-emerald-600'
+          : 'text-muted-foreground hover:text-foreground hover:bg-black/5'}"
+        title="Tampilan List"
+      >
+        <List size={18} />
+      </button>
     </div>
 
     <!-- Filters (Visible on Tablet/Desktop) -->
@@ -562,6 +636,7 @@
       </p>
     </div>
   {:else}
+    {#if viewMode === "grid"}
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" in:fade>
       {#each paginatedLogs as log, i}
         <div
@@ -716,6 +791,163 @@
         </div>
       {/each}
     </div>
+  {:else}
+    <div
+      class="bg-card/60 backdrop-blur-3xl border border-border rounded-md shadow-2xl shadow-black/5 w-full max-w-full"
+      style="--action-bar-h: {actionBarHeight}px;"
+      in:fade
+    >
+      <div class="w-full overflow-x-auto lg:overflow-visible">
+        <table class="w-full text-left border-collapse relative min-w-[800px] lg:min-w-0">
+          <thead
+            class="sticky z-30 bg-background/95 backdrop-blur-xl shadow-sm after:absolute after:bottom-0 after:left-0 after:right-0 after:h-px after:bg-border/50 rounded-t-md top-0 lg:top-[calc(var(--nav-height,5rem)+1rem+var(--action-bar-h)+1.5rem)]"
+          >
+            <tr class="bg-muted/30 text-[10px] uppercase tracking-widest text-muted-foreground font-black">
+              <th class="p-5 pl-8 rounded-tl-md">
+                <button class="flex items-center gap-2 hover:text-foreground transition-colors group" onclick={() => handleSort("kategori")}>
+                  Kategori
+                  {#if sortColumn !== "kategori"}
+                    <ArrowUpDown size={12} class="opacity-0 group-hover:opacity-50 transition-opacity" />
+                  {:else if sortDirection === "asc"}
+                    <ArrowUp size={12} class="text-emerald-500" />
+                  {:else}
+                    <ArrowDown size={12} class="text-emerald-500" />
+                  {/if}
+                </button>
+              </th>
+              <th class="p-5">
+                <button class="flex items-center gap-2 hover:text-foreground transition-colors group" onclick={() => handleSort("nama_demoplot")}>
+                  Plot Lahan
+                  {#if sortColumn !== "nama_demoplot"}
+                    <ArrowUpDown size={12} class="opacity-0 group-hover:opacity-50 transition-opacity" />
+                  {:else if sortDirection === "asc"}
+                    <ArrowUp size={12} class="text-emerald-500" />
+                  {:else}
+                    <ArrowDown size={12} class="text-emerald-500" />
+                  {/if}
+                </button>
+              </th>
+              <th class="p-5 w-[35%]">
+                <span class="flex items-center gap-2 text-foreground">Aktivitas</span>
+              </th>
+              <th class="p-5">
+                <button class="flex items-center gap-2 hover:text-foreground transition-colors group" onclick={() => handleSort("tanggal")}>
+                  Waktu
+                  {#if sortColumn !== "tanggal"}
+                    <ArrowUpDown size={12} class="opacity-0 group-hover:opacity-50 transition-opacity" />
+                  {:else if sortDirection === "asc"}
+                    <ArrowUp size={12} class="text-emerald-500" />
+                  {:else}
+                    <ArrowDown size={12} class="text-emerald-500" />
+                  {/if}
+                </button>
+              </th>
+              <th class="p-5 text-center rounded-tr-md">Aksi</th>
+            </tr>
+          </thead>
+          <tbody class="text-sm">
+            {#each paginatedLogs as log, i (log.id)}
+              <tr class="border-b border-border/50 hover:bg-muted/20 transition-colors group {i === paginatedLogs.length - 1 ? 'border-0' : ''}">
+                <td class="p-5 pl-8">
+                  <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-xl bg-muted overflow-hidden flex-shrink-0">
+                      {#if log.foto_dokumentasi}
+                        <img src={log.foto_dokumentasi} alt="" class="w-full h-full object-cover" />
+                      {:else}
+                        <div class="w-full h-full flex items-center justify-center opacity-30">
+                          <ImageIcon size={24} />
+                        </div>
+                      {/if}
+                    </div>
+                    <div>
+                      <div class="font-bold text-foreground flex items-center gap-2 uppercase tracking-tight">
+                        <span class="px-2 py-0.5 {getCategoryColor(log.kategori)} text-white text-[8px] font-black uppercase tracking-widest rounded-full">
+                          {log.kategori}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </td>
+                <td class="p-5">
+                  <div class="flex items-center gap-2 text-xs font-bold text-emerald-600">
+                    <MapPin size={14} />
+                    {log.demoplot?.nama_demoplot || "Plot Tidak Diketahui"}
+                  </div>
+                </td>
+                <td class="p-5">
+                  <p class="text-sm text-muted-foreground/80 font-medium line-clamp-2">
+                    {log.deskripsi || "Tidak ada deskripsi aktivitas."}
+                  </p>
+                  {#if log.output}
+                    <div class="mt-2 flex items-start gap-1">
+                      <Sparkles size={12} class="text-amber-500 shrink-0 mt-0.5" />
+                      <p class="text-[10px] font-bold text-foreground">
+                        <span class="text-muted-foreground">Hasil:</span> {log.output}
+                      </p>
+                    </div>
+                  {/if}
+                </td>
+                <td class="p-5">
+                  <div class="space-y-1.5">
+                    <div class="flex items-center gap-2 text-xs font-bold">
+                      <Calendar size={14} class="text-blue-500" />
+                      {formatDate(log.tanggal)}
+                    </div>
+                    {#if log.durasi}
+                      <div class="flex items-center gap-2 text-[10px] text-muted-foreground">
+                        <Clock size={12} class="text-emerald-500" />
+                        <span class="font-bold">{log.durasi}</span>
+                      </div>
+                    {/if}
+                  </div>
+                </td>
+                <td class="p-5">
+                  <div class="flex items-center justify-center gap-2">
+                    <div class="relative group/btn">
+                      <button onclick={() => openTimeline(log.id)} class="p-2 flex items-center justify-center bg-white border border-border hover:border-emerald-500/50 hover:text-emerald-600 rounded-xl transition-all shadow-sm">
+                        <ClipboardClock size={16} />
+                      </button>
+                      <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 px-3 py-1.5 bg-foreground text-background text-[10px] font-black uppercase tracking-widest rounded-lg opacity-0 pointer-events-none group-hover/btn:opacity-100 group-hover/btn:-translate-y-1 translate-y-1 transition-all duration-200 whitespace-nowrap z-50 shadow-xl">
+                        Timeline
+                        <div class="absolute top-full left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-foreground rotate-45"></div>
+                      </div>
+                    </div>
+                    <div class="relative group/btn">
+                      <button onclick={() => openViewDrawer(log)} class="p-2 flex items-center justify-center bg-white border border-border hover:border-emerald-500/50 hover:text-emerald-600 rounded-xl transition-all shadow-sm">
+                        <Eye size={16} />
+                      </button>
+                      <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 px-3 py-1.5 bg-foreground text-background text-[10px] font-black uppercase tracking-widest rounded-lg opacity-0 pointer-events-none group-hover/btn:opacity-100 group-hover/btn:-translate-y-1 translate-y-1 transition-all duration-200 whitespace-nowrap z-50 shadow-xl">
+                        Rincian
+                        <div class="absolute top-full left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-foreground rotate-45"></div>
+                      </div>
+                    </div>
+                    <div class="relative group/btn">
+                      <button onclick={() => openEditForm(log)} class="p-2 flex items-center justify-center bg-white border border-border hover:border-blue-500/50 hover:text-blue-600 rounded-xl transition-all shadow-sm">
+                        <Pencil size={16} />
+                      </button>
+                      <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 px-3 py-1.5 bg-foreground text-background text-[10px] font-black uppercase tracking-widest rounded-lg opacity-0 pointer-events-none group-hover/btn:opacity-100 group-hover/btn:-translate-y-1 translate-y-1 transition-all duration-200 whitespace-nowrap z-50 shadow-xl">
+                        Edit
+                        <div class="absolute top-full left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-foreground rotate-45"></div>
+                      </div>
+                    </div>
+                    <div class="relative group/btn">
+                      <button onclick={() => initiateDelete(log)} class="p-2 flex items-center justify-center bg-white border border-border hover:border-red-500/50 text-red-500/70 hover:text-red-600 rounded-xl transition-all shadow-sm">
+                        <Trash2 size={16} />
+                      </button>
+                      <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 px-3 py-1.5 bg-foreground text-background text-[10px] font-black uppercase tracking-widest rounded-lg opacity-0 pointer-events-none group-hover/btn:opacity-100 group-hover/btn:-translate-y-1 translate-y-1 transition-all duration-200 whitespace-nowrap z-50 shadow-xl">
+                        Hapus
+                        <div class="absolute top-full left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-foreground rotate-45"></div>
+                      </div>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            {/each}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {/if}
 
     <!-- Pagination -->
     {#if totalPages > 1}

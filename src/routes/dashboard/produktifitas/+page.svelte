@@ -40,6 +40,12 @@
     Briefcase,
     ShoppingBag,
     Leaf,
+    Eye,
+    LayoutGrid,
+    List,
+    ArrowUpDown,
+    ArrowUp,
+    ArrowDown,
   } from "@lucide/svelte";
   import { fade, fly, scale } from "svelte/transition";
   import { backOut } from "svelte/easing";
@@ -85,12 +91,66 @@
     });
   });
 
+  // View & UI State
+  let viewMode = $state<"grid" | "list">("grid");
+  let actionBarHeight = $state(0);
+
+  // Sorting
+  let sortColumn = $state("");
+  let sortDirection = $state<"asc" | "desc">("asc");
+
+  function handleSort(column: string) {
+    if (sortColumn === column) {
+      if (sortDirection === "asc") {
+        sortDirection = "desc";
+      } else {
+        sortColumn = "";
+        sortDirection = "asc";
+      }
+    } else {
+      sortColumn = column;
+      sortDirection = "asc";
+    }
+  }
+
+  function getRecordLabel(r: Produktivitas) {
+    if (r.kategori_pencatatan === "input") return r.jenis_input || "-";
+    if (r.kategori_pencatatan === "tenaga kerja") return r.jenis_pekerjaan || "-";
+    return r.nama_jenis || "-";
+  }
+
+  let sortedRecords = $derived(
+    [...filteredRecords].sort((a, b) => {
+      if (!sortColumn) return 0;
+      let valA: any;
+      let valB: any;
+
+      if (sortColumn === "label") {
+        valA = getRecordLabel(a).toLowerCase();
+        valB = getRecordLabel(b).toLowerCase();
+      } else if (sortColumn === "nama_demoplot") {
+        valA = a.demoplot?.nama_demoplot || "";
+        valB = b.demoplot?.nama_demoplot || "";
+      } else if (sortColumn === "tanggal_pencatatan") {
+        valA = new Date(a.tanggal_pencatatan).getTime();
+        valB = new Date(b.tanggal_pencatatan).getTime();
+      } else {
+        valA = ((a as any)[sortColumn] || "").toString().toLowerCase();
+        valB = ((b as any)[sortColumn] || "").toString().toLowerCase();
+      }
+
+      if (valA < valB) return sortDirection === "asc" ? -1 : 1;
+      if (valA > valB) return sortDirection === "asc" ? 1 : -1;
+      return 0;
+    })
+  );
+
   // Pagination
   let currentPage = $state(1);
   const itemsPerPage = 12;
-  let totalPages = $derived(Math.ceil(filteredRecords.length / itemsPerPage));
+  let totalPages = $derived(Math.ceil(sortedRecords.length / itemsPerPage));
   let paginatedRecords = $derived(
-    filteredRecords.slice(
+    sortedRecords.slice(
       (currentPage - 1) * itemsPerPage,
       currentPage * itemsPerPage,
     ),
@@ -353,15 +413,15 @@
 <div class="min-h-screen pb-24 px-6 max-w-7xl mx-auto space-y-12">
   <!-- Module Hero -->
   <section
-    class="relative mt-28 rounded-[2.5rem] bg-slate-950 overflow-hidden shadow-2xl shadow-slate-950/20"
+    class="relative mt-28 rounded-[2.5rem] bg-emerald-900 overflow-hidden shadow-2xl shadow-emerald-900/20"
     in:fly={{ y: -20, duration: 800 }}
   >
     <div class="absolute inset-0 z-0 opacity-40">
       <div
-        class="absolute -top-[20%] -left-[10%] w-[60%] h-[120%] bg-emerald-500/20 blur-[120px] rounded-full"
+        class="absolute -top-[20%] -left-[10%] w-[60%] h-[120%] bg-emerald-400 blur-[120px] rounded-full"
       ></div>
       <div
-        class="absolute top-[20%] -right-[10%] w-[40%] h-[80%] bg-blue-500/10 blur-[100px] rounded-full"
+        class="absolute top-[20%] -right-[10%] w-[40%] h-[80%] bg-blue-500/30 blur-[100px] rounded-full"
       ></div>
     </div>
 
@@ -387,7 +447,7 @@
             class="text-4xl md:text-7xl font-black tracking-tighter leading-[0.9]"
           >
             Manajemen <span
-              class="bg-gradient-to-r from-emerald-400 to-blue-400 bg-clip-text text-transparent"
+              class="bg-gradient-to-r from-emerald-400 to-emerald-200 bg-clip-text text-transparent"
               >Produktivitas</span
             >
           </h1>
@@ -410,7 +470,7 @@
             <ShoppingBag size={80} strokeWidth={1} />
           </div>
           <p
-            class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1"
+            class="text-[10px] font-black text-emerald-200/40 uppercase tracking-[0.2em] mb-1"
           >
             Input
           </p>
@@ -425,7 +485,7 @@
             <User size={80} strokeWidth={1} />
           </div>
           <p
-            class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1"
+            class="text-[10px] font-black text-emerald-200/40 uppercase tracking-[0.2em] mb-1"
           >
             Tenaga Kerja
           </p>
@@ -440,7 +500,7 @@
             <Cherry size={80} strokeWidth={1} />
           </div>
           <p
-            class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1"
+            class="text-[10px] font-black text-emerald-200/40 uppercase tracking-[0.2em] mb-1"
           >
             Hasil Panen
           </p>
@@ -452,10 +512,11 @@
 
   <!-- Action Bar -->
   <div
-    class="sticky z-[100] flex flex-row items-center gap-3 bg-background/60 backdrop-blur-3xl p-3 md:p-4 rounded-[2rem] border border-border/50 shadow-2xl transition-all"
+    bind:clientHeight={actionBarHeight}
+    class="sticky z-[100] flex flex-row items-center gap-3 bg-background/60 backdrop-blur-3xl p-3 md:p-4 rounded-[2rem] border border-border/50 shadow-2xl transition-all flex-wrap md:flex-nowrap"
     style="top: calc(var(--nav-height, 5rem) + 1rem)"
   >
-    <div class="relative flex-1 group">
+    <div class="relative flex-1 group min-w-[200px]">
       <Search
         size={18}
         class="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-emerald-500 transition-colors"
@@ -466,6 +527,29 @@
         placeholder="Cari komoditas, input, atau plot..."
         class="w-full bg-muted/40 border-transparent focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/10 rounded-2xl pl-11 pr-4 py-3 text-sm font-medium transition-all"
       />
+    </div>
+
+    <div
+      class="flex items-center p-1 bg-muted/30 rounded-2xl border border-border/50"
+    >
+      <button
+        onclick={() => (viewMode = "grid")}
+        class="p-3 rounded-xl transition-all {viewMode === 'grid'
+          ? 'bg-white shadow-sm text-emerald-600'
+          : 'text-muted-foreground hover:text-foreground hover:bg-black/5'}"
+        title="Tampilan Grid"
+      >
+        <LayoutGrid size={18} />
+      </button>
+      <button
+        onclick={() => (viewMode = "list")}
+        class="p-3 rounded-xl transition-all {viewMode === 'list'
+          ? 'bg-white shadow-sm text-emerald-600'
+          : 'text-muted-foreground hover:text-foreground hover:bg-black/5'}"
+        title="Tampilan List"
+      >
+        <List size={18} />
+      </button>
     </div>
 
     <div class="hidden lg:flex items-center gap-2">
@@ -516,6 +600,7 @@
       </h3>
     </div>
   {:else}
+    {#if viewMode === "grid"}
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {#each paginatedRecords as r, i}
         {@const Icon = getCategoryIcon(r.kategori_pencatatan)}
@@ -671,6 +756,144 @@
         </div>
       {/each}
     </div>
+  {:else}
+    <div
+      class="bg-card/60 backdrop-blur-3xl border border-border rounded-md shadow-2xl shadow-black/5 w-full max-w-full"
+      style="--action-bar-h: {actionBarHeight}px;"
+      in:fade
+    >
+      <div class="w-full overflow-x-auto lg:overflow-visible">
+        <table class="w-full text-left border-collapse relative min-w-[850px] lg:min-w-0">
+          <thead
+            class="sticky z-30 bg-background/95 backdrop-blur-xl shadow-sm after:absolute after:bottom-0 after:left-0 after:right-0 after:h-px after:bg-border/50 rounded-t-md top-0 lg:top-[calc(var(--nav-height,5rem)+1rem+var(--action-bar-h)+1.5rem)]"
+          >
+            <tr class="bg-muted/30 text-[10px] uppercase tracking-widest text-muted-foreground font-black">
+              <th class="p-5 pl-8 rounded-tl-md">
+                <button class="flex items-center gap-2 hover:text-foreground transition-colors group" onclick={() => handleSort("kategori_pencatatan")}>
+                  Kategori
+                  {#if sortColumn !== "kategori_pencatatan"}
+                    <ArrowUpDown size={12} class="opacity-0 group-hover:opacity-50 transition-opacity" />
+                  {:else if sortDirection === "asc"}
+                    <ArrowUp size={12} class="text-emerald-500" />
+                  {:else}
+                    <ArrowDown size={12} class="text-emerald-500" />
+                  {/if}
+                </button>
+              </th>
+              <th class="p-5">
+                <button class="flex items-center gap-2 hover:text-foreground transition-colors group" onclick={() => handleSort("label")}>
+                  Rincian
+                  {#if sortColumn !== "label"}
+                    <ArrowUpDown size={12} class="opacity-0 group-hover:opacity-50 transition-opacity" />
+                  {:else if sortDirection === "asc"}
+                    <ArrowUp size={12} class="text-emerald-500" />
+                  {:else}
+                    <ArrowDown size={12} class="text-emerald-500" />
+                  {/if}
+                </button>
+              </th>
+              <th class="p-5">
+                <button class="flex items-center gap-2 hover:text-foreground transition-colors group" onclick={() => handleSort("nama_demoplot")}>
+                  Plot Lahan
+                  {#if sortColumn !== "nama_demoplot"}
+                    <ArrowUpDown size={12} class="opacity-0 group-hover:opacity-50 transition-opacity" />
+                  {:else if sortDirection === "asc"}
+                    <ArrowUp size={12} class="text-emerald-500" />
+                  {:else}
+                    <ArrowDown size={12} class="text-emerald-500" />
+                  {/if}
+                </button>
+              </th>
+              <th class="p-5">
+                <button class="flex items-center gap-2 hover:text-foreground transition-colors group" onclick={() => handleSort("tanggal_pencatatan")}>
+                  Tanggal
+                  {#if sortColumn !== "tanggal_pencatatan"}
+                    <ArrowUpDown size={12} class="opacity-0 group-hover:opacity-50 transition-opacity" />
+                  {:else if sortDirection === "asc"}
+                    <ArrowUp size={12} class="text-emerald-500" />
+                  {:else}
+                    <ArrowDown size={12} class="text-emerald-500" />
+                  {/if}
+                </button>
+              </th>
+              <th class="p-5 text-center rounded-tr-md">Aksi</th>
+            </tr>
+          </thead>
+          <tbody class="text-sm">
+            {#each paginatedRecords as r, i (r.id)}
+              {@const Icon = getCategoryIcon(r.kategori_pencatatan)}
+              <tr class="border-b border-border/50 hover:bg-muted/20 transition-colors group {i === paginatedRecords.length - 1 ? 'border-0' : ''}">
+                <td class="p-5 pl-8">
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl {getCategoryColor(r.kategori_pencatatan)} flex items-center justify-center text-white shadow-lg flex-shrink-0">
+                      <Icon size={20} />
+                    </div>
+                    <span class="px-2 py-0.5 {getCategoryColor(r.kategori_pencatatan)} text-white text-[8px] font-black uppercase tracking-widest rounded-full">
+                      {r.kategori_pencatatan}
+                    </span>
+                  </div>
+                </td>
+                <td class="p-5">
+                  <div class="space-y-1">
+                    <div class="font-bold text-foreground uppercase tracking-tight">
+                      {getRecordLabel(r)}
+                    </div>
+                    {#if r.kategori_pencatatan === "input"}
+                      <div class="text-[10px] text-muted-foreground">
+                        {r.jumlah_pakai || "-"} {r.satuan || ""} · <span class="text-blue-600 font-bold">{formatCurrency(r.biaya_total)}</span>
+                      </div>
+                    {:else if r.kategori_pencatatan === "tenaga kerja"}
+                      <div class="text-[10px] text-muted-foreground">
+                        {r.jumlah_jam_kerja || "-"} Jam · <span class="text-amber-600 font-bold">{formatCurrency(r.biaya_tenaga_kerja)}</span>
+                      </div>
+                    {:else if r.kategori_pencatatan === "hasil panen"}
+                      <div class="text-[10px] text-muted-foreground">
+                        <span class="text-emerald-600 font-bold">{r.berat_basah_kg || "-"} Kg</span> · Putaran ke-{r.putaran_panen || 1}
+                      </div>
+                    {/if}
+                  </div>
+                </td>
+                <td class="p-5">
+                  <div class="flex items-center gap-2 text-xs font-bold text-emerald-600">
+                    <MapPin size={14} />
+                    {r.demoplot?.nama_demoplot || "-"}
+                  </div>
+                </td>
+                <td class="p-5">
+                  <div class="flex items-center gap-2 text-xs font-bold">
+                    <Calendar size={14} class="text-blue-500" />
+                    {formatDate(r.tanggal_pencatatan)}
+                  </div>
+                </td>
+                <td class="p-5">
+                  <div class="flex items-center justify-center gap-2">
+                    <div class="relative group/btn">
+                      <button onclick={() => openEditForm(r)} class="p-2 flex items-center justify-center bg-white border border-border hover:border-blue-500/50 hover:text-blue-600 rounded-xl transition-all shadow-sm">
+                        <Pencil size={16} />
+                      </button>
+                      <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 px-3 py-1.5 bg-foreground text-background text-[10px] font-black uppercase tracking-widest rounded-lg opacity-0 pointer-events-none group-hover/btn:opacity-100 group-hover/btn:-translate-y-1 translate-y-1 transition-all duration-200 whitespace-nowrap z-50 shadow-xl">
+                        Edit
+                        <div class="absolute top-full left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-foreground rotate-45"></div>
+                      </div>
+                    </div>
+                    <div class="relative group/btn">
+                      <button onclick={() => { deleteTarget = r; showDeleteConfirm = true; }} class="p-2 flex items-center justify-center bg-white border border-border hover:border-red-500/50 text-red-500/70 hover:text-red-600 rounded-xl transition-all shadow-sm">
+                        <Trash2 size={16} />
+                      </button>
+                      <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 px-3 py-1.5 bg-foreground text-background text-[10px] font-black uppercase tracking-widest rounded-lg opacity-0 pointer-events-none group-hover/btn:opacity-100 group-hover/btn:-translate-y-1 translate-y-1 transition-all duration-200 whitespace-nowrap z-50 shadow-xl">
+                        Hapus
+                        <div class="absolute top-full left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-foreground rotate-45"></div>
+                      </div>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            {/each}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {/if}
 
     <!-- Pagination -->
     {#if totalPages > 1}
